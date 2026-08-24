@@ -1,0 +1,332 @@
+let world
+let id
+let connectedComputers = {}
+let deviceMessages = {}
+
+// Retrieve open/closed states of collapsibles
+if (localStorage.getItem("collapsibleStates")) {
+    const detailStates = JSON.parse(localStorage.getItem("collapsibleStates"))
+    const details = document.querySelector("aside").querySelectorAll("details")
+    for (let i=0; i<details.length; i++) {
+        details[i].open = detailStates[i]
+    }
+}
+
+setInterval(function () {
+    const details = document.querySelector("aside").querySelectorAll("details")
+    const states = []
+    for (let i=0; i<details.length; i++) {
+        states[i] = details[i].open
+    }
+    localStorage.setItem("collapsibleStates", JSON.stringify(states))
+}, 60 * 1000) // Every minute
+
+// WEBSOCKET
+let socket = new WebSocket("wss://desktop-7pv85n7.tailbfa33.ts.net/")
+
+function wsend(...data) { // Specific world and id
+    socket.send(JSON.stringify([{id:id, world:world},...data]))
+    console.log("Sent: "+[{id:id, world:world},...data])
+}
+function wbroadcast(...data) { // World broadcast
+    socket.send(JSON.stringify([{world:world},...data]))
+    console.log("Broadcasted: "+[{world:world},...data])
+}
+function wWideBroadcast(...data) { // Wide broadcast
+    socket.send(JSON.stringify([{},...data]))
+    console.log("Widely Broadcasted: "+[{},...data])
+}
+
+// Connection open/close/error log
+socket.addEventListener("open", () => {
+    console.log("Connected to WebSocket server.")
+    wWideBroadcast("find")
+})
+socket.addEventListener("close", () => {
+    console.log("Disconnected from WebSocket server.")
+})
+socket.addEventListener("error", error => {
+    console.log("WebSocket error: " + error)
+})
+
+socket.addEventListener("message", (event) => {
+    socketLogMsg("Got: "+ event.data)
+    const data = JSON.parse(event.data)
+    const address = data[0]
+    if (data[1].substring(0,4) != "Pong") {
+        console.log("Got:",data)
+    }
+    if (data[1] == "Ping") {
+        wsend("Pong Website")
+    }
+
+    // Run no matter the address
+    if (data[1] == "shoutBack") {
+        addDevice(address, data[2])
+        if (Date.now() - lastRefreshTime > 1000) { // Plays a sound if it wasnt instant
+            playSound("xp.ogg", 0.1, 1)
+        }
+    } else if (data[1] == "deviceChatMsg") { // Incoming device chat message
+        console.log("msg received")
+        recordDeviceChatMessage(address, data[2])
+    } else if (data[1] == "alert") { // Alert handler
+        alert(data[2])
+    }
+
+    if (address.world == world) { // Run if it comes from the selected world
+        
+        if (address.id == id) { // Run if it comes from the selected ID & world
+            
+        }
+    }
+})
+
+// INTERACTION
+let lastRefreshTime = Date.now()
+document.getElementById("find").addEventListener("click", () => { 
+    connectedComputers = {}
+    lastRefreshTime = Date.now()
+    playSound("spyglass_stop.ogg",1,1)
+    wWideBroadcast("find")
+})
+const worldSelector = document.getElementById("worldSelector")
+const deviceSelector = document.getElementById("deviceSelector")
+let lastSelectedWorld
+worldSelector.addEventListener("change", () => {
+    lastSelectedWorld = worldSelector.value
+    listDevices()
+})
+document.getElementById("connectBtn").addEventListener("click", () => { 
+    ask("CloudCatcher Code:", "...").then(function(answer) {
+        if (answer) {
+            wsend("cloud", answer)
+        }
+    })
+})
+document.getElementById("rebootBtn").addEventListener("click", () => {
+    wsend("reboot")
+})
+document.getElementById("runCodeBtn").addEventListener("click", () => {
+    ask("Lua Code:", "...").then(function(answer) {
+        if (answer) {
+            wsend("runCode", answer)
+        }
+    })
+})
+document.getElementById("deviceChatInput").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+        const input = document.getElementById("deviceChatInput")
+        const address = []
+        address.id = id
+        address.world = world
+        wsend("controllerChatMsg", input.value)
+        recordDeviceChatMessage(address, input.value, true)
+        input.value = ""
+    }
+})
+
+// FUNCTIONS
+function updateSelectedDevice(w, i, element) {
+    world = w
+    id = i
+    for (let i = 0; i < deviceSelector.children.length; i++) {
+        deviceSelector.children[i].className = ""
+    }
+    element.className = "highlighted"
+    const deviceInfo = document.getElementById("deviceInfo")
+    const info = connectedComputers[w][i]
+    function addInfo(t, v) {
+        const row = document.createElement("tr")
+        deviceInfo.appendChild(row)
+        const title = document.createElement("td")
+        title.style.textTransform = "capitalize"
+        title.innerText = t
+        row.appendChild(title)
+        const value = document.createElement("td")
+        if (typeof v == "object") {
+            for (let key in v) {
+                value.innerHTML += v[key] +"<br>"
+            }
+        } else {
+            value.innerHTML += v
+        }
+        row.appendChild(value)
+    }
+    deviceInfo.innerHTML = ""
+    addInfo("Name", i)
+    for (let key in info) {
+        if (key == "clock") {
+            addInfo(key, info[key] +" s")
+        } else {
+            addInfo(key, info[key])
+        }
+    }
+    updateDeviceChatLog()
+}
+function addDevice(address, info) { // adds the sender to the table connectedComputers, and refreshes selectors
+    if (!connectedComputers[address.world]) { // if the world doesnt exist, make it
+        connectedComputers[address.world] = []
+    }
+    connectedComputers[address.world][address.id] = info
+    //console.log(info)
+    console.log(connectedComputers)
+
+    worldSelector.innerHTML = ""
+    for (let world in connectedComputers) { // Creates world options
+        const option = document.createElement("option")
+        option.innerText = world
+        option.value = world
+        worldSelector.appendChild(option)
+    }
+    worldSelector.value = lastSelectedWorld
+    listDevices()
+}
+let lastSelectedDevice
+function listDevices() { // Lists the devices from the currently selected world from worldSelector
+    deviceSelector.innerHTML = ""
+    if (connectedComputers[worldSelector.value] == null) {return}
+    for (let id in connectedComputers[worldSelector.value]) {
+        const info = connectedComputers[worldSelector.value][id]
+        const icon = document.createElement("img")
+        icon.className = "icon"
+        icon.style.marginRight = "16px"
+        if (info) {
+            if (info.advanced) {
+                if (info.type == "computer") {
+                    icon.src = "assets/img/device_icons/computer_adv.png"
+                } else if (info.type == "turtle") {
+                    icon.src = "assets/img/device_icons/turtle_adv.png"
+                } else if (info.type == "pocket") {
+                    icon.src = "assets/img/device_icons/pocket_adv.png"
+                }
+            } else {
+                if (info.type == "computer") {
+                    icon.src = "assets/img/device_icons/computer.png"
+                } else if (info.type == "turtle") {
+                    icon.src = "assets/img/device_icons/turtle.png"
+                } else if (info.type == "pocket") {
+                    icon.src = "assets/img/device_icons/pocket.png"
+                }
+            }
+        }
+
+        const p = document.createElement("p")
+        p.appendChild(icon)
+        p.innerHTML += id
+        if (lastSelectedDevice == id) {
+            p.className = "highlighted"
+        }
+        deviceSelector.appendChild(p)
+        p.addEventListener("click", () => {
+            lastSelectedDevice = id
+            updateSelectedDevice(worldSelector.value, id, p)
+        })
+    }
+}
+function ask(question, placeholder) { // Makes a popup that asks a question
+    const prompt = document.getElementById("prompt")
+    const title = prompt.querySelector("p")
+    const input = prompt.querySelector("input")
+    const submitBtn = prompt.querySelector(".submit")
+    const cancelBtn = prompt.querySelector(".cancel")
+    prompt.style.visibility = "visible"
+    // Set the window position
+    const dims = prompt.getBoundingClientRect()
+    prompt.style.top =  window.innerHeight/2 - dims.height/2 +"px"
+    prompt.style.left = window.innerWidth/2 - dims.width/2 +"px"
+
+    title.innerText = question
+    input.placeholder = placeholder
+    input.value = ""
+    input.focus()
+
+    return new Promise((resolve) => {
+        function submit() {
+            prompt.style.visibility = "hidden"
+            submitBtn.removeEventListener("click", submit)
+            resolve(input.value)
+        }
+        function cancel() {
+            prompt.style.visibility = "hidden"
+            cancelBtn.removeEventListener("click", cancel)
+            resolve(null)
+        }
+
+        submitBtn.addEventListener("click", submit)
+        cancelBtn.addEventListener("click", cancel)
+        input.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") submit()
+        })
+    })
+}
+function alert(text) {
+    const alertBox = document.getElementById("alert")
+    const p = alertBox.querySelector("p")
+    const button = alertBox.querySelector("button")
+    if (Math.floor(Math.random()*1) == 1000) { // funny
+        button.innerText = "I thoroughly understand this statement and I am wholeheartedly aware of its meaning"
+    } else {
+        button.innerText = "Ok"
+    }
+    p.innerText = text
+    const dims = alertBox.getBoundingClientRect()
+    alertBox.style.top =  window.innerHeight/2 - dims.height/2 +"px"
+    alertBox.style.left = window.innerWidth/2 - dims.width/2 +"px"
+    alertBox.style.visibility = "visible"
+    function close() {
+        button.removeEventListener("click", close)
+        alertBox.style.visibility = "hidden"
+    }
+    button.addEventListener("click", close)
+}
+function playSound(path,volume,speed) { // Plays a sound
+    const audio = new Audio("assets/sounds/"+path)
+    audio.volume = volume || 1
+    audio.playbackRate = speed || 1
+    audio.play()
+}
+function socketLogMsg(msg) { // Sends a message in the socket debug
+    const log = document.getElementById("socketLog")
+    const p = document.createElement("p")
+    p.innerText = msg
+    log.appendChild(p)
+    if (log.children.length > 100) {
+        log.removeChild(log.children[0])
+    }
+}
+function recordDeviceChatMessage(address, msg, controller) {
+    if (!deviceMessages[address.world]) {deviceMessages[address.world] = []}
+    if (!deviceMessages[address.world][address.id]) {deviceMessages[address.world][address.id] = []}
+
+    const log = deviceMessages[address.world][address.id]
+    let msgInfo = []
+    msgInfo.text = msg
+    msgInfo.controller = controller
+    log.push(msgInfo)
+    console.log(deviceMessages)
+
+    if (world == address.world && id == address.id) {
+        updateDeviceChatLog()
+        if (!controller) playSound("hat.mp3", 0.5)
+    } else {
+        playSound("toggle.ogg")
+    }
+}
+function updateDeviceChatLog() {
+    const log = document.getElementById("deviceChatLog")
+    log.innerHTML = ""
+    if (!deviceMessages[world]) {return}
+    if (!deviceMessages[world][id]) {return}
+    for (const key in deviceMessages[world][id]) {
+        const msg = deviceMessages[world][id][key]
+        const p = document.createElement("p")
+        if (msg.controller) {
+            p.innerText = msg.text
+            p.className = "fromController"
+        } else {
+            p.innerText = "> "+ msg.text
+        }
+        log.appendChild(p)
+    }
+    log.scrollTop = log.scrollHeight
+}

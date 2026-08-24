@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="assets/img/device_icons/computer.png">
+    <title>Control Panel</title>
+</head>
+<body>
+    <div id="prompt">
+        <p style="margin-bottom: 10px;">Title</p>
+        <input type="text" placeholder="..." spellcheck="false"><br>
+        <button class="submit">Submit</button>
+        <button class="cancel">Cancel</button>
+    </div>
+    <div id="alert">
+        <p></p>
+        <button style="margin-bottom: 0;">Ok</button>
+    </div>
+
+    <aside>
+        <details>
+            <summary>Settings</summary>
+            <div>
+
+            </div>
+        </details>
+
+        <details open>
+            <summary>Device Selector</summary>
+            <div>
+                <div style="display: flex;">
+                    <button id="find" style="width: 30px; padding-left: 8px;">⇄</button>
+                    <select id="worldSelector" style="min-width: 0; flex-grow: 1;"></select>
+                </div>
+                <div id="deviceSelector"></div>
+            </div>
+        </details>
+
+        <details open>
+            <summary>World Info</summary>
+            <div>
+                
+            </div>
+        </details>
+
+        <details>
+            <summary>World Chat</summary>
+            <div>
+                
+            </div>
+        </details>
+
+        <details open>
+            <summary>Device Actions</summary>
+            <div>
+                <button id="connectBtn">Connect</button>
+                <button id="runCodeBtn">Run Code</button>
+                <button id="rebootBtn">Reboot</button>
+            </div>
+        </details>
+
+        <details open>
+            <summary>Device Info</summary>
+            <div>
+                <table id="deviceInfo" style="width: 100%;"></table>
+            </div>
+        </details>
+
+        <details>
+            <summary>Device Chat</summary>
+            <div id="deviceChat">
+                <div id="deviceChatLog" class="nice-scrollbar"></div>
+                <input type="text" id="deviceChatInput">
+            </div>
+        </details>
+
+        <details>
+            <summary>WebSocket Log</summary>
+            <div id="socketLog" class="nice-scrollbar"></div>
+        </details>
+    </aside>
+
+    <div id="main">
+        
+    </div>
+
+    <script src="script.js" type="module"></script>
+</body>
+</html>

@@ -1,0 +1,38 @@
+-CONTROLLER-
+X send command input has default text
+X redo UI for more per-world centric whateverthefuck i am currently upset a
+X promptbox
+X when refreshing devices remember last selected
+X icons for computer types
+    X advanced types
+    X computer
+    X turtle
+    X pocket
+X show computer info
+X remember open/closed panels
+X remember selected computer
+- implement 3D engine
+- socket reconnection
+- icon and sound when new message
+- disable buttons when no device selected
+
+-DEVICE-
+X sounds for booting up compuser
+X get computer info
+    X get peripherals (no "front", "left")
+X dont reboot if connection fails, try again
+- multiple tabs for programs (main program being chat)
+    X main 
+    X cloudcatcher
+    - any others ()
+- if its non-advanced (cant have multiple tabs) make exception to show chat or 
+- computer server on world that sends some infos of world:
+    - minecraft version
+    - craftOS version "os.version()"
+    - world days "os.day()"
+    - chatbox for chat
+    - player detector
+- program to "infect" other computers (computer goes in disk drive, automatically install everything)
+- make whole thing a background process
+- function that receives events and sends them through socket (for other programs to not have to make a whole other websocket connection)
+- give computer description from controller
