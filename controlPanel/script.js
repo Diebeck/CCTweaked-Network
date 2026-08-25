@@ -139,26 +139,19 @@ document.getElementById("infectBtn").addEventListener("click", () => {
         }
     })
 })
-document.getElementById("setIdBtn").addEventListener("click", () => {
-    ask("New ID:", "...").then(function(answer) {if (answer) {
-        wsend("changeData", "id", answer)
-    }})
-})
-document.getElementById("setWorldBtn").addEventListener("click", () => {
-    ask("New World:", "...").then(function(answer) {if (answer) {
-        wsend("changeData", "world", answer)
-    }})
-})
-document.getElementById("setLabelBtn").addEventListener("click", () => {
-    ask("New Label:", "...").then(function(answer) {if (answer) {
-        wsend("changeData", "label", answer)
-    }})
-})
-document.getElementById("setDescriptionBtn").addEventListener("click", () => {
-    ask("New Description:", "...").then(function(answer) {if (answer) {
-        wsend("changeData", "description", answer)
-    }})
-})
+const setDataButtons = {
+    "setIdBtn": "id",
+    "setWorldBtn": "world",
+    "setLabelBtn": "label",
+    "setDescriptionBtn": "description"
+}
+for (const key in setDataButtons) {
+    document.getElementById(key).addEventListener("click", () => {
+        ask("New "+ setDataButtons[key] +":", "...").then(function(answer) {if (answer) {
+            wsend("changeData", setDataButtons[key], answer)
+        }})
+    })
+}
 document.getElementById("deviceChatInput").addEventListener("keydown", (e) => {
     if (e.key === "Enter") {
         const input = document.getElementById("deviceChatInput")

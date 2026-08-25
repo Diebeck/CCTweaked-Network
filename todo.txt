@@ -17,6 +17,7 @@ X disable buttons when no device selected
 - socket reconnection
 - icon and sound when new message
 - Add human-language log for minor alerts (computer connected, chats, changes)
+- Target whole worlds or entire network
 
 -DEVICE-
 X sounds for booting up compuser
