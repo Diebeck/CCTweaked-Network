@@ -138,6 +138,7 @@ local function sendInfo(startup)
     info.label = os.getComputerLabel()
     info.description = socketData.description
     info.clock = math.floor(os.clock())
+    info.autorun = socketData.autorun
     if #peripheral.getNames() > 0 then
         info.peripherals = {}
     end
@@ -178,6 +179,7 @@ local function changeData()
         elseif type == "world" then address.world = newData socketData.address.world = newData
         elseif type == "label" then socketData.label = newData os.setComputerLabel(newData)
         elseif type == "description" then socketData.description = newData
+        elseif type == "autorun" then socketData.autorun = newData
         end
         local file = fs.open("socketData.txt", "w")
         file.write(textutils.serialise(socketData))
@@ -205,6 +207,15 @@ local function infect()
             file.close()
             wsend("alert", "Infection successful!")
         end
+    end
+end
+
+local function autorun()
+    while true do
+        if socketData.autorun then
+            shell.run(socketData.autorun)
+        end
+        sleep()
     end
 end
 
@@ -240,6 +251,7 @@ parallel.waitForAny(
     runCode,
     changeData,
     infect,
+    autorun,
     manageMiscEvents,
     debug
 )

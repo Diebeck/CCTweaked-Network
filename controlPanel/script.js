@@ -1,7 +1,9 @@
 let world
 let id
 let connectedComputers = {}
-let deviceMessages = {}
+const worldInfos = {}
+const deviceMessages = {}
+const worldMessages = {}
 
 // Retrieve open/closed states of collapsibles
 if (localStorage.getItem("collapsibleStates")) {
@@ -68,7 +70,6 @@ socket.addEventListener("message", (event) => {
     // Run no matter the address
     if (data[1] == "shoutBack") {
         addDevice(address, data[2])
-        console.log(data[3])
         if (data[3] == true) { // If its a startup
             if (Date.now() - lastRefreshTime > 1000) { // Plays a sound if it wasnt instant
                 playSound("activate.ogg", 0.8, 1.5)
@@ -85,8 +86,15 @@ socket.addEventListener("message", (event) => {
                 }
             }
         }
+    } else if (data[1] == "worldInfo") {
+        worldInfos[data[2].world] = data[2]
+        if (data[2].world == world) {
+            updateWorldInfo(worldSelector.value)
+        }
     } else if (data[1] == "deviceChatMsg") { // Incoming device chat message
         recordDeviceChatMessage(address, data[2])
+    } else if (data[1] == "worldChatMsg") { // Incoming world chat message
+        recordWorldChatMessage(address, data[2])
     } else if (data[1] == "alert") { // Alert handler
         alert(data[2])
     }
@@ -113,6 +121,9 @@ let lastSelectedWorld
 worldSelector.addEventListener("change", () => {
     lastSelectedWorld = worldSelector.value
     playSound("wood_click.ogg", 0.1)
+    world = worldSelector.value
+    updateWorldInfo(worldSelector.value)
+    updateWorldChatLog()
     listDevices()
 })
 document.getElementById("connectBtn").addEventListener("click", () => { 
@@ -143,7 +154,8 @@ const setDataButtons = {
     "setIdBtn": "id",
     "setWorldBtn": "world",
     "setLabelBtn": "label",
-    "setDescriptionBtn": "description"
+    "setDescriptionBtn": "description",
+    "setAutorunBtn": "autorun"
 }
 for (const key in setDataButtons) {
     document.getElementById(key).addEventListener("click", () => {
@@ -160,6 +172,16 @@ document.getElementById("deviceChatInput").addEventListener("keydown", (e) => {
         address.world = world
         wsend("controllerChatMsg", input.value)
         recordDeviceChatMessage(address, input.value, true)
+        input.value = ""
+    }
+})
+document.getElementById("worldChatInput").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+        const input = document.getElementById("worldChatInput")
+        const address = []
+        address.world = world
+        wbroadcast("controllerWorldChatMsg", input.value)
+        recordWorldChatMessage(address, input.value, true)
         input.value = ""
     }
 })
@@ -266,6 +288,32 @@ function listDevices() { // Lists the devices from the currently selected world 
         })
     }
 }
+function updateWorldInfo(world) {
+    const worldInfo = document.getElementById("worldInfo")
+    function addInfo(t, v) {
+        const row = document.createElement("tr")
+        worldInfo.appendChild(row)
+        const title = document.createElement("td")
+        title.style.textTransform = "capitalize"
+        title.style.minWidth = "100px"
+        title.innerText = t
+        row.appendChild(title)
+        const value = document.createElement("td")
+        if (typeof v == "object") {
+            for (let key in v) {
+                value.innerHTML += v[key] +"<br>"
+            }
+        } else {
+            value.innerHTML += v
+        }
+        row.appendChild(value)
+    }
+    worldInfo.innerHTML = ""
+    const info = worldInfos[world]
+    for (let key in info) {
+        addInfo(key, info[key])
+    }
+}
 const promptBox = document.getElementById("prompt")
 const promptInput = promptBox.querySelector("input")
 const submitBtn = promptBox.querySelector(".submit")
@@ -365,6 +413,40 @@ function updateDeviceChatLog() {
             p.className = "fromController"
         } else {
             p.innerText = "> "+ msg.text
+        }
+        log.appendChild(p)
+    }
+    log.scrollTop = log.scrollHeight
+}
+function recordWorldChatMessage(address, msg, controller) {
+    if (!worldMessages[address.world]) {worldMessages[address.world] = []}
+
+    const log = worldMessages[address.world]
+    let msgInfo = []
+    msgInfo.text = msg
+    msgInfo.controller = controller
+    log.push(msgInfo)
+
+    console.log(world, address.world)
+    if (world == address.world) {
+        updateWorldChatLog()
+        if (!controller) playSound("hat.mp3", 0.5)
+    } else {
+        playSound("toggle.ogg")
+    }
+}
+function updateWorldChatLog() {
+    const log = document.getElementById("worldChatLog")
+    log.innerHTML = ""
+    if (!worldMessages[world]) {return}
+    for (const key in worldMessages[world]) {
+        const msg = worldMessages[world][key]
+        const p = document.createElement("p")
+        if (msg.controller) {
+            p.innerText = msg.text
+            p.className = "fromController"
+        } else {
+            p.innerText = msg.text
         }
         log.appendChild(p)
     }

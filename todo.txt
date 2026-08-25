@@ -18,6 +18,9 @@ X disable buttons when no device selected
 - icon and sound when new message
 - Add human-language log for minor alerts (computer connected, chats, changes)
 - Target whole worlds or entire network
+- remember selected world/computer across page reloads
+- reorder sections
+- pop out and drag sections (very cool)
 
 -DEVICE-
 X sounds for booting up compuser
@@ -27,15 +30,16 @@ X dont reboot if connection fails, try again
 X function that receives events and sends them through socket (for other programs to not have to make a whole other websocket connection)
 X program to "infect" other computers (computer goes in disk drive, automatically install everything)
 X give computer description from controller (also label, id, world)
+X computer server on world that sends some infos of world:
+    X minecraft version
+    X craftOS version "os.version()"
+    X world days "os.day()"
+    X chatbox for chat
+    X player detector
 - multiple tabs for programs (main program being chat)
     X main 
     X cloudcatcher
     - any others ()
 - if its non-advanced (cant have multiple tabs) make exception to show chat or 
-- computer server on world that sends some infos of world:
-    - minecraft version
-    - craftOS version "os.version()"
-    - world days "os.day()"
-    - chatbox for chat
-    - player detector
 - make whole thing a background process
+- make installer

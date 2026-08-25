@@ -250,6 +250,38 @@ details > div {
     border: 2px solid gray;
     appearance: none;
 }
+#worldChat {
+    padding: 10px;
+    height: 300px;
+    background-color: rgb(25,25,25);
+    color: white;
+    display: flex;
+    flex-direction: column;
+}
+#worldChatLog {
+    margin-bottom: 10px;
+    flex-grow: 1;
+    white-space: wrap;
+    overflow-y: auto;
+    display: flex flex-end;
+}
+#worldChatLog p {
+    margin: 2px 0;
+}
+#worldChatLog p.fromController {
+    color: rgb(219, 219, 107);
+    text-align: right;
+    margin-right: 5px;
+}
+#worldChat input[type=text] {
+    margin-bottom: 0;
+    bottom: 0px;
+    color: white;
+    background: transparent;
+    width: 100%;
+    border: 2px solid gray;
+    appearance: none;
+}
 #socketLog {
     height: 350px;
     padding: 5px;
