@@ -1,6 +1,6 @@
 -CONTROLLER-
 X send command input has default text
-X redo UI for more per-world centric whateverthefuck i am currently upset a
+X redo UI for more per-world centric
 X promptbox
 X when refreshing devices remember last selected
 X icons for computer types
@@ -11,16 +11,21 @@ X icons for computer types
 X show computer info
 X remember open/closed panels
 X remember selected computer
+X different sounds when devices update
+X disable buttons when no device selected
 - implement 3D engine
 - socket reconnection
 - icon and sound when new message
-- disable buttons when no device selected
+- Add human-language log for minor alerts (computer connected, chats, changes)
 
 -DEVICE-
 X sounds for booting up compuser
 X get computer info
     X get peripherals (no "front", "left")
 X dont reboot if connection fails, try again
+X function that receives events and sends them through socket (for other programs to not have to make a whole other websocket connection)
+X program to "infect" other computers (computer goes in disk drive, automatically install everything)
+X give computer description from controller (also label, id, world)
 - multiple tabs for programs (main program being chat)
     X main 
     X cloudcatcher
@@ -32,7 +37,4 @@ X dont reboot if connection fails, try again
     - world days "os.day()"
     - chatbox for chat
     - player detector
-- program to "infect" other computers (computer goes in disk drive, automatically install everything)
 - make whole thing a background process
-- function that receives events and sends them through socket (for other programs to not have to make a whole other websocket connection)
-- give computer description from controller

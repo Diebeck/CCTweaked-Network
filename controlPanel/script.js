@@ -21,6 +21,11 @@ setInterval(function () {
     localStorage.setItem("collapsibleStates", JSON.stringify(states))
 }, 60 * 1000) // Every minute
 
+const buttons = document.getElementById("deviceActions").querySelectorAll("button")
+for (let i=0; i<buttons.length; i++) {
+    buttons[i].disabled = true
+}
+
 // WEBSOCKET
 let socket = new WebSocket("wss://desktop-7pv85n7.tailbfa33.ts.net/")
 
@@ -63,11 +68,24 @@ socket.addEventListener("message", (event) => {
     // Run no matter the address
     if (data[1] == "shoutBack") {
         addDevice(address, data[2])
-        if (Date.now() - lastRefreshTime > 1000) { // Plays a sound if it wasnt instant
-            playSound("xp.ogg", 0.1, 1)
+        console.log(data[3])
+        if (data[3] == true) { // If its a startup
+            if (Date.now() - lastRefreshTime > 1000) { // Plays a sound if it wasnt instant
+                playSound("activate.ogg", 0.8, 1.5)
+            }
+        } else { // If its an update
+            if (worldSelector.value == address.world && id == address.id) { // If its the selected device, update it
+                updateSelectedDevice(worldSelector.value, id)
+                if (Date.now() - lastRefreshTime > 1000) {
+                    playSound("hud_bubble.ogg")
+                }
+            } else { // Its an update somewhere else
+                if (Date.now() - lastRefreshTime > 1000) {
+                    playSound("toggle.ogg")
+                }
+            }
         }
     } else if (data[1] == "deviceChatMsg") { // Incoming device chat message
-        console.log("msg received")
         recordDeviceChatMessage(address, data[2])
     } else if (data[1] == "alert") { // Alert handler
         alert(data[2])
@@ -94,6 +112,7 @@ const deviceSelector = document.getElementById("deviceSelector")
 let lastSelectedWorld
 worldSelector.addEventListener("change", () => {
     lastSelectedWorld = worldSelector.value
+    playSound("wood_click.ogg", 0.1)
     listDevices()
 })
 document.getElementById("connectBtn").addEventListener("click", () => { 
@@ -113,6 +132,33 @@ document.getElementById("runCodeBtn").addEventListener("click", () => {
         }
     })
 })
+document.getElementById("infectBtn").addEventListener("click", () => {
+    ask("Infected Address ID:", "...").then(function(answer) {
+        if (answer) {
+            wsend("infect", answer)
+        }
+    })
+})
+document.getElementById("setIdBtn").addEventListener("click", () => {
+    ask("New ID:", "...").then(function(answer) {if (answer) {
+        wsend("changeData", "id", answer)
+    }})
+})
+document.getElementById("setWorldBtn").addEventListener("click", () => {
+    ask("New World:", "...").then(function(answer) {if (answer) {
+        wsend("changeData", "world", answer)
+    }})
+})
+document.getElementById("setLabelBtn").addEventListener("click", () => {
+    ask("New Label:", "...").then(function(answer) {if (answer) {
+        wsend("changeData", "label", answer)
+    }})
+})
+document.getElementById("setDescriptionBtn").addEventListener("click", () => {
+    ask("New Description:", "...").then(function(answer) {if (answer) {
+        wsend("changeData", "description", answer)
+    }})
+})
 document.getElementById("deviceChatInput").addEventListener("keydown", (e) => {
     if (e.key === "Enter") {
         const input = document.getElementById("deviceChatInput")
@@ -126,13 +172,9 @@ document.getElementById("deviceChatInput").addEventListener("keydown", (e) => {
 })
 
 // FUNCTIONS
-function updateSelectedDevice(w, i, element) {
+function updateSelectedDevice(w, i) { // Selects and shows the information of the device
     world = w
     id = i
-    for (let i = 0; i < deviceSelector.children.length; i++) {
-        deviceSelector.children[i].className = ""
-    }
-    element.className = "highlighted"
     const deviceInfo = document.getElementById("deviceInfo")
     const info = connectedComputers[w][i]
     function addInfo(t, v) {
@@ -156,11 +198,16 @@ function updateSelectedDevice(w, i, element) {
     addInfo("Name", i)
     for (let key in info) {
         if (key == "clock") {
-            addInfo(key, info[key] +" s")
+            if (info)
+            addInfo(key, new Date(info[key] * 1000).toISOString().substring(14, 19))
         } else {
             addInfo(key, info[key])
         }
     }
+    for (let j=0; j<buttons.length; j++) {
+        buttons[j].disabled = !i
+    }
+    document.getElementById("infectBtn").disabled = !info.drive // Disables the infect button if theres nothing in the drive
     updateDeviceChatLog()
 }
 function addDevice(address, info) { // adds the sender to the table connectedComputers, and refreshes selectors
@@ -168,8 +215,6 @@ function addDevice(address, info) { // adds the sender to the table connectedCom
         connectedComputers[address.world] = []
     }
     connectedComputers[address.world][address.id] = info
-    //console.log(info)
-    console.log(connectedComputers)
 
     worldSelector.innerHTML = ""
     for (let world in connectedComputers) { // Creates world options
@@ -219,51 +264,53 @@ function listDevices() { // Lists the devices from the currently selected world 
         deviceSelector.appendChild(p)
         p.addEventListener("click", () => {
             lastSelectedDevice = id
-            updateSelectedDevice(worldSelector.value, id, p)
+            for (let i = 0; i < deviceSelector.children.length; i++) {
+                deviceSelector.children[i].className = ""
+            }
+            playSound("wood_click.ogg", 0.1)
+            p.className = "highlighted"
+            updateSelectedDevice(worldSelector.value, id)
         })
     }
 }
+const promptBox = document.getElementById("prompt")
+const promptInput = promptBox.querySelector("input")
+const submitBtn = promptBox.querySelector(".submit")
+const cancelBtn = promptBox.querySelector(".cancel")
+let promptResolve = null
+function resolvePrompt(value) {
+    if (!promptResolve) {return}
+    const resolve = promptResolve
+    promptResolve = null
+    promptBox.style.visibility = "hidden"
+    resolve(value)
+}
+submitBtn.addEventListener("click", () => {resolvePrompt(promptInput.value)})
+cancelBtn.addEventListener("click", () => {resolvePrompt(null)})
+promptInput.addEventListener("keydown", (e) => {if (e.key === "Enter") resolvePrompt(promptInput.value)})
 function ask(question, placeholder) { // Makes a popup that asks a question
-    const prompt = document.getElementById("prompt")
-    const title = prompt.querySelector("p")
-    const input = prompt.querySelector("input")
-    const submitBtn = prompt.querySelector(".submit")
-    const cancelBtn = prompt.querySelector(".cancel")
-    prompt.style.visibility = "visible"
+    resolvePrompt(null) // Resolves the last prompt as cancelled
+    const title = promptBox.querySelector("p")
+    promptBox.style.visibility = "visible"
+    playSound("hud_bubble.ogg", 1)
     // Set the window position
-    const dims = prompt.getBoundingClientRect()
-    prompt.style.top =  window.innerHeight/2 - dims.height/2 +"px"
-    prompt.style.left = window.innerWidth/2 - dims.width/2 +"px"
-
+    const dims = promptBox.getBoundingClientRect()
+    promptBox.style.top =  window.innerHeight/2 - dims.height/2 +"px"
+    promptBox.style.left = window.innerWidth/2 - dims.width/2 +"px"
     title.innerText = question
-    input.placeholder = placeholder
-    input.value = ""
-    input.focus()
+    promptInput.placeholder = placeholder
+    promptInput.value = ""
+    promptInput.focus()
 
     return new Promise((resolve) => {
-        function submit() {
-            prompt.style.visibility = "hidden"
-            submitBtn.removeEventListener("click", submit)
-            resolve(input.value)
-        }
-        function cancel() {
-            prompt.style.visibility = "hidden"
-            cancelBtn.removeEventListener("click", cancel)
-            resolve(null)
-        }
-
-        submitBtn.addEventListener("click", submit)
-        cancelBtn.addEventListener("click", cancel)
-        input.addEventListener("keydown", (e) => {
-            if (e.key === "Enter") submit()
-        })
+        promptResolve = resolve
     })
 }
 function alert(text) {
     const alertBox = document.getElementById("alert")
     const p = alertBox.querySelector("p")
     const button = alertBox.querySelector("button")
-    if (Math.floor(Math.random()*1) == 1000) { // funny
+    if (Math.floor(Math.random()*100) == 0) { // funny
         button.innerText = "I thoroughly understand this statement and I am wholeheartedly aware of its meaning"
     } else {
         button.innerText = "Ok"
@@ -273,6 +320,7 @@ function alert(text) {
     alertBox.style.top =  window.innerHeight/2 - dims.height/2 +"px"
     alertBox.style.left = window.innerWidth/2 - dims.width/2 +"px"
     alertBox.style.visibility = "visible"
+    playSound("hud_bubble.ogg", 1)
     function close() {
         button.removeEventListener("click", close)
         alertBox.style.visibility = "hidden"
@@ -303,7 +351,6 @@ function recordDeviceChatMessage(address, msg, controller) {
     msgInfo.text = msg
     msgInfo.controller = controller
     log.push(msgInfo)
-    console.log(deviceMessages)
 
     if (world == address.world && id == address.id) {
         updateDeviceChatLog()

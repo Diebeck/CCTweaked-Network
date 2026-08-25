@@ -213,6 +213,11 @@ details > div {
     background-color: white;
     padding-left: 20px;
 }
+#deviceActions {
+    display: flex;
+    justify-content: space-evenly;
+    flex-wrap: wrap;
+}
 #deviceChat {
     padding: 10px;
     height: 300px;
