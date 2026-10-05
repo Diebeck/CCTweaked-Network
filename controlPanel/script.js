@@ -9,7 +9,7 @@ const worldMessages = {}
 if (localStorage.getItem("collapsibleStates")) {
     const detailStates = JSON.parse(localStorage.getItem("collapsibleStates"))
     const details = document.querySelector("aside").querySelectorAll("details")
-    for (let i=0; i<details.length; i++) {
+    for (let i = 0; i < details.length; i++) {
         details[i].open = detailStates[i]
     }
 }
@@ -17,14 +17,14 @@ if (localStorage.getItem("collapsibleStates")) {
 setInterval(function () {
     const details = document.querySelector("aside").querySelectorAll("details")
     const states = []
-    for (let i=0; i<details.length; i++) {
+    for (let i = 0; i < details.length; i++) {
         states[i] = details[i].open
     }
     localStorage.setItem("collapsibleStates", JSON.stringify(states))
 }, 60 * 1000) // Every minute
 
 const buttons = document.getElementById("deviceActions").querySelectorAll("button")
-for (let i=0; i<buttons.length; i++) {
+for (let i = 0; i < buttons.length; i++) {
     buttons[i].disabled = true
 }
 
@@ -32,16 +32,16 @@ for (let i=0; i<buttons.length; i++) {
 let socket = new WebSocket("wss://desktop-7pv85n7.tailbfa33.ts.net/")
 
 function wsend(...data) { // Specific world and id
-    socket.send(JSON.stringify([{id:id, world:world},...data]))
-    console.log("Sent: "+[{id:id, world:world},...data])
+    socket.send(JSON.stringify([{ id: id, world: world }, ...data]))
+    console.log("Sent: " + [{ id: id, world: world }, ...data])
 }
 function wbroadcast(...data) { // World broadcast
-    socket.send(JSON.stringify([{world:world},...data]))
-    console.log("Broadcasted: "+[{world:world},...data])
+    socket.send(JSON.stringify([{ world: world }, ...data]))
+    console.log("Broadcasted: " + [{ world: world }, ...data])
 }
 function wWideBroadcast(...data) { // Wide broadcast
-    socket.send(JSON.stringify([{},...data]))
-    console.log("Widely Broadcasted: "+[{},...data])
+    socket.send(JSON.stringify([{}, ...data]))
+    console.log("Widely Broadcasted: " + [{}, ...data])
 }
 
 // Connection open/close/error log
@@ -57,11 +57,11 @@ socket.addEventListener("error", error => {
 })
 
 socket.addEventListener("message", (event) => {
-    socketLogMsg("Got: "+ event.data)
+    socketLogMsg("Got: " + event.data)
     const data = JSON.parse(event.data)
     const address = data[0]
-    if (data[1].substring(0,4) != "Pong") {
-        console.log("Got:",data)
+    if (data[1].substring(0, 4) != "Pong") {
+        console.log("Got:", data)
     }
     if (data[1] == "Ping") {
         wsend("Pong Website")
@@ -100,19 +100,19 @@ socket.addEventListener("message", (event) => {
     }
 
     if (address.world == world) { // Run if it comes from the selected world
-        
+
         if (address.id == id) { // Run if it comes from the selected ID & world
-            
+
         }
     }
 })
 
 // INTERACTION
 let lastRefreshTime = Date.now()
-document.getElementById("find").addEventListener("click", () => { 
+document.getElementById("find").addEventListener("click", () => {
     connectedComputers = {}
     lastRefreshTime = Date.now()
-    playSound("spyglass_stop.ogg",1,1)
+    playSound("spyglass_stop.ogg", 1, 1)
     wWideBroadcast("find")
 })
 const worldSelector = document.getElementById("worldSelector")
@@ -126,8 +126,8 @@ worldSelector.addEventListener("change", () => {
     updateWorldChatLog()
     listDevices()
 })
-document.getElementById("connectBtn").addEventListener("click", () => { 
-    ask("CloudCatcher Code:", "...").then(function(answer) {
+document.getElementById("connectBtn").addEventListener("click", () => {
+    ask("CloudCatcher Code:", "...").then(function (answer) {
         if (answer) {
             wsend("cloud", answer)
         }
@@ -137,14 +137,14 @@ document.getElementById("rebootBtn").addEventListener("click", () => {
     wsend("reboot")
 })
 document.getElementById("runCodeBtn").addEventListener("click", () => {
-    ask("Lua Code:", "...").then(function(answer) {
+    ask("Lua Code:", "...").then(function (answer) {
         if (answer) {
             wsend("runCode", answer)
         }
     })
 })
 document.getElementById("infectBtn").addEventListener("click", () => {
-    ask("Infected Address ID:", "...").then(function(answer) {
+    ask("Infected Address ID:", "...").then(function (answer) {
         if (answer) {
             wsend("infect", answer)
         }
@@ -159,9 +159,11 @@ const setDataButtons = {
 }
 for (const key in setDataButtons) {
     document.getElementById(key).addEventListener("click", () => {
-        ask("New "+ setDataButtons[key] +":", "...").then(function(answer) {if (answer) {
-            wsend("changeData", setDataButtons[key], answer)
-        }})
+        ask("New " + setDataButtons[key] + ":", "...").then(function (answer) {
+            if (answer) {
+                wsend("changeData", setDataButtons[key], answer)
+            }
+        })
     })
 }
 document.getElementById("deviceChatInput").addEventListener("keydown", (e) => {
@@ -202,7 +204,7 @@ function updateSelectedDevice(w, i) { // Selects and shows the information of th
         const value = document.createElement("td")
         if (typeof v == "object") {
             for (let key in v) {
-                value.innerHTML += v[key] +"<br>"
+                value.innerHTML += v[key] + "<br>"
             }
         } else {
             value.innerHTML += v
@@ -214,12 +216,12 @@ function updateSelectedDevice(w, i) { // Selects and shows the information of th
     for (let key in info) {
         if (key == "clock") {
             if (info)
-            addInfo(key, new Date(info[key] * 1000).toISOString().substring(14, 19))
+                addInfo(key, new Date(info[key] * 1000).toISOString().substring(14, 19))
         } else {
             addInfo(key, info[key])
         }
     }
-    for (let j=0; j<buttons.length; j++) {
+    for (let j = 0; j < buttons.length; j++) {
         buttons[j].disabled = !i
     }
     document.getElementById("infectBtn").disabled = !info.drive // Disables the infect button if theres nothing in the drive
@@ -244,7 +246,7 @@ function addDevice(address, info) { // adds the sender to the table connectedCom
 let lastSelectedDevice
 function listDevices() { // Lists the devices from the currently selected world from worldSelector
     deviceSelector.innerHTML = ""
-    if (connectedComputers[worldSelector.value] == null) {return}
+    if (connectedComputers[worldSelector.value] == null) { return }
     for (let id in connectedComputers[worldSelector.value]) {
         const info = connectedComputers[worldSelector.value][id]
         const icon = document.createElement("img")
@@ -301,7 +303,7 @@ function updateWorldInfo(world) {
         const value = document.createElement("td")
         if (typeof v == "object") {
             for (let key in v) {
-                value.innerHTML += v[key] +"<br>"
+                value.innerHTML += v[key] + "<br>"
             }
         } else {
             value.innerHTML += v
@@ -320,15 +322,15 @@ const submitBtn = promptBox.querySelector(".submit")
 const cancelBtn = promptBox.querySelector(".cancel")
 let promptResolve = null
 function resolvePrompt(value) {
-    if (!promptResolve) {return}
+    if (!promptResolve) { return }
     const resolve = promptResolve
     promptResolve = null
     promptBox.style.visibility = "hidden"
     resolve(value)
 }
-submitBtn.addEventListener("click", () => {resolvePrompt(promptInput.value)})
-cancelBtn.addEventListener("click", () => {resolvePrompt(null)})
-promptInput.addEventListener("keydown", (e) => {if (e.key === "Enter") resolvePrompt(promptInput.value)})
+submitBtn.addEventListener("click", () => { resolvePrompt(promptInput.value) })
+cancelBtn.addEventListener("click", () => { resolvePrompt(null) })
+promptInput.addEventListener("keydown", (e) => { if (e.key === "Enter") resolvePrompt(promptInput.value) })
 function ask(question, placeholder) { // Makes a popup that asks a question
     resolvePrompt(null) // Resolves the last prompt as cancelled
     const title = promptBox.querySelector("p")
@@ -336,8 +338,8 @@ function ask(question, placeholder) { // Makes a popup that asks a question
     playSound("hud_bubble.ogg", 1)
     // Set the window position
     const dims = promptBox.getBoundingClientRect()
-    promptBox.style.top =  window.innerHeight/2 - dims.height/2 +"px"
-    promptBox.style.left = window.innerWidth/2 - dims.width/2 +"px"
+    promptBox.style.top = window.innerHeight / 2 - dims.height / 2 + "px"
+    promptBox.style.left = window.innerWidth / 2 - dims.width / 2 + "px"
     title.innerText = question
     promptInput.placeholder = placeholder
     promptInput.value = ""
@@ -351,15 +353,15 @@ function alert(text) {
     const alertBox = document.getElementById("alert")
     const p = alertBox.querySelector("p")
     const button = alertBox.querySelector("button")
-    if (Math.floor(Math.random()*100) == 0) { // funny
+    if (Math.floor(Math.random() * 100) == 0) { // funny
         button.innerText = "I thoroughly understand this statement and I am wholeheartedly aware of its meaning"
     } else {
         button.innerText = "Ok"
     }
     p.innerText = text
     const dims = alertBox.getBoundingClientRect()
-    alertBox.style.top =  window.innerHeight/2 - dims.height/2 +"px"
-    alertBox.style.left = window.innerWidth/2 - dims.width/2 +"px"
+    alertBox.style.top = window.innerHeight / 2 - dims.height / 2 + "px"
+    alertBox.style.left = window.innerWidth / 2 - dims.width / 2 + "px"
     alertBox.style.visibility = "visible"
     playSound("hud_bubble.ogg", 1)
     function close() {
@@ -368,8 +370,8 @@ function alert(text) {
     }
     button.addEventListener("click", close)
 }
-function playSound(path,volume,speed) { // Plays a sound
-    const audio = new Audio("assets/sounds/"+path)
+function playSound(path, volume, speed) { // Plays a sound
+    const audio = new Audio("assets/sounds/" + path)
     audio.volume = volume || 1
     audio.playbackRate = speed || 1
     audio.play()
@@ -384,8 +386,8 @@ function socketLogMsg(msg) { // Sends a message in the socket debug
     }
 }
 function recordDeviceChatMessage(address, msg, controller) {
-    if (!deviceMessages[address.world]) {deviceMessages[address.world] = []}
-    if (!deviceMessages[address.world][address.id]) {deviceMessages[address.world][address.id] = []}
+    if (!deviceMessages[address.world]) { deviceMessages[address.world] = [] }
+    if (!deviceMessages[address.world][address.id]) { deviceMessages[address.world][address.id] = [] }
 
     const log = deviceMessages[address.world][address.id]
     let msgInfo = []
@@ -403,8 +405,8 @@ function recordDeviceChatMessage(address, msg, controller) {
 function updateDeviceChatLog() {
     const log = document.getElementById("deviceChatLog")
     log.innerHTML = ""
-    if (!deviceMessages[world]) {return}
-    if (!deviceMessages[world][id]) {return}
+    if (!deviceMessages[world]) { return }
+    if (!deviceMessages[world][id]) { return }
     for (const key in deviceMessages[world][id]) {
         const msg = deviceMessages[world][id][key]
         const p = document.createElement("p")
@@ -412,14 +414,14 @@ function updateDeviceChatLog() {
             p.innerText = msg.text
             p.className = "fromController"
         } else {
-            p.innerText = "> "+ msg.text
+            p.innerText = "> " + msg.text
         }
         log.appendChild(p)
     }
     log.scrollTop = log.scrollHeight
 }
 function recordWorldChatMessage(address, msg, controller) {
-    if (!worldMessages[address.world]) {worldMessages[address.world] = []}
+    if (!worldMessages[address.world]) { worldMessages[address.world] = [] }
 
     const log = worldMessages[address.world]
     let msgInfo = []
@@ -438,7 +440,7 @@ function recordWorldChatMessage(address, msg, controller) {
 function updateWorldChatLog() {
     const log = document.getElementById("worldChatLog")
     log.innerHTML = ""
-    if (!worldMessages[world]) {return}
+    if (!worldMessages[world]) { return }
     for (const key in worldMessages[world]) {
         const msg = worldMessages[world][key]
         const p = document.createElement("p")
