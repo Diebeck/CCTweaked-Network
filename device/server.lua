@@ -59,9 +59,27 @@ local function chat()
     end
 end
 
+local function sendToast()
+    while true do
+        local event, player, msg = os.pullEvent("sendToast")
+        local chatBox = peripheral.find("chat_box")
+        if chatBox then
+            chatBox.sendToast({
+                message = msg,
+                title = "//",
+                player = player,
+                prefix = ">",
+                brackets = ">>",
+                bracketsColor = "",
+            })
+        end
+    end
+end
+
 parallel.waitForAny(
     shoutBack,
     handlePlayerEvents,
     sendChatMessage,
-    chat
+    chat,
+    sendToast
 )

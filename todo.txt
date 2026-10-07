@@ -21,6 +21,7 @@ X pop out and drag sections (very cool)
 - Target whole worlds or entire network
 - remember selected world/computer across page reloads
 - reorder sections
+- custom hover text
 
 -DEVICE-
 X sounds for booting up compuser

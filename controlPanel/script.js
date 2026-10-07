@@ -276,7 +276,7 @@ function listDevices() { // Lists the devices from the currently selected world 
         })
     }
 }
-function updateWorldInfo(world) {
+function updateWorldInfo(world) { // Updates the world's info panel
     const worldInfo = document.getElementById("worldInfo")
     function addInfo(t, v) {
         const row = document.createElement("tr")
@@ -287,11 +287,28 @@ function updateWorldInfo(world) {
         title.innerText = t
         row.appendChild(title)
         const value = document.createElement("td")
-        if (typeof v == "object") {
-            for (let key in v) {
-                value.innerHTML += v[key] + "<br>"
+        if (typeof v == "object") { // If the item is a list
+            if (t == "players") { // If its players
+                for (let player of v) {
+                    console.log(player)
+                    const span = document.createElement("span")
+                    span.innerHTML = player
+                    span.style.cursor = "pointer"
+                    value.appendChild(span)
+                    span.addEventListener("click", () => {
+                        utils.ask(`Toast to ${player}:`).then(function (answer) {
+                            if (answer) {
+                                wbroadcast("sendToast", player, answer)
+                            }
+                        })
+                    })
+                }
+            } else { // If its a regular list
+                for (let key in v) {
+                    value.innerHTML += v[key] + "<br>"
+                }
             }
-        } else {
+        } else { // If its a single value
             value.innerHTML += v
         }
         row.appendChild(value)
