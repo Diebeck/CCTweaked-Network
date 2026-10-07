@@ -13,6 +13,7 @@ X remember open/closed panels
 X remember selected computer
 X different sounds when devices update
 X disable buttons when no device selected
+X pop out and drag sections (very cool)
 - implement 3D engine
 - socket reconnection
 - icon and sound when new message
@@ -20,7 +21,6 @@ X disable buttons when no device selected
 - Target whole worlds or entire network
 - remember selected world/computer across page reloads
 - reorder sections
-- pop out and drag sections (very cool)
 
 -DEVICE-
 X sounds for booting up compuser

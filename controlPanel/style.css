@@ -9,6 +9,7 @@
     margin: 0px;
     padding: 0px;
     box-sizing: border-box;
+    overflow: hidden;
 }
 html, body {
     width: 100%;
@@ -110,41 +111,38 @@ td {
     text-wrap: wrap;
 }
 .nice-scrollbar::-webkit-scrollbar {
-  width: 2px;
+    width: 2px;
 }
 .nice-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
+    background: transparent;
 }
 .nice-scrollbar::-webkit-scrollbar-thumb {
-  background: gray;
+    background: gray;
 }
 .nice-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: dimgray;
+    background: dimgray;
+}
+*:focus {
+    outline: none;
 }
 
 /* SPECIFICS */
-#prompt {
+#prompt, #alert {
     visibility: hidden;
     position: absolute;
     padding: 10px;
-    height: 124px;
-    width: 400px;
     background-color: rgba(0, 0, 0, 0.5);
     box-shadow: 0 4px 0 rgba(0, 0, 0, 0.75);
     color: white;
     text-shadow: 2px 2px 0px rgb(62, 62, 62);
+    z-index: 99;
+}
+#prompt {
+    height: 124px;
+    width: 400px;
 }
 #prompt input {
     width: 380px;
-}
-#alert {
-    visibility: hidden;
-    position: absolute;
-    padding: 10px;
-    background-color: rgba(0, 0, 0, 0.5);
-    box-shadow: 0 4px 0 rgba(0, 0, 0, 0.75);
-    color: white;
-    text-shadow: 2px 2px 0px rgb(62, 62, 62);
 }
 #main {
     flex-grow: 1;
@@ -157,12 +155,13 @@ aside {
 }
 aside > details {
     background-color: lightgray;
+    max-width: 400px;
 }
 aside::-webkit-scrollbar {
   width: 0px;
 }
 summary {
-    padding: 5px;
+    padding: 5px 8px;
     color: white;
     text-shadow: 2px 2px 0px rgb(62, 62, 62);
     background-color: rgb(150, 150, 150);
@@ -288,4 +287,14 @@ details > div {
     background-color: black;
     color: white;
     overflow-y: auto;
+}
+.dragging {
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
+}
+.free {
+    position: absolute;
+    outline: 2px solid rgba(0, 0, 0, 0.75);
+    box-shadow: 0 5px 5px rgba(0, 0, 0, 0.25);
+    background: rgba(255, 255, 255, 0.1) !important;
+    backdrop-filter: blur(20px);
 }
