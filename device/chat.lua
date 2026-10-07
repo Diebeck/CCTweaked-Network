@@ -46,6 +46,25 @@ local function banner()
     end
 end
 
+local function tts(message)
+    local url = "https://music.madefor.cc/tts?text=" .. textutils.urlEncode(message)
+    local response, err = http.get { url = url, binary = true }
+    if not response then error(err, 0) end
+
+    local speaker = peripheral.find("speaker")
+    local decoder = require("cc.audio.dfpwm").make_decoder()
+
+    while true do
+        local chunk = response.read(16 * 1024)
+        if not chunk then break end
+
+        local buffer = decoder(chunk)
+        while not speaker.playAudio(buffer) do
+            os.pullEvent("speaker_audio_empty")
+        end
+    end
+end
+
 local function chat()
     local lastMessages = {"", "", ""}
     while true do
@@ -98,6 +117,7 @@ local function writeChatMsg()
             else
                 msgType = "normal"
             end
+            tts(msg)
             local termX, termY = term.getSize()
             local readX, readY = term.getCursorPos()
             local width = math.floor(termX * 2/3)
@@ -120,7 +140,7 @@ local function writeChatMsg()
                     term.setTextColor(colors.yellow)
                     term.write(toWrite)
                     term.setTextColor(colors.white)
-                    if peripheral.find("speaker") then peripheral.find("speaker").playSound("minecraft:block.note_block.flute", 0.5, math.random()*0.3 +0.5) end
+                    --if peripheral.find("speaker") then peripheral.find("speaker").playSound("minecraft:block.note_block.flute", 0.5, math.random()*0.3 +0.5) end
                     -- record write position
                     lastLetterX, lastLetterY = term.getCursorPos()
                     -- set read position
@@ -180,10 +200,18 @@ local function drawEye()
     end
 end
 
+local function talkThroughAll()
+    while true do
+        local event, msg = os.pullEvent("controllerWorldChatMsg")
+        tts(msg)
+    end
+end
+
 parallel.waitForAny(
     banner,
     chat,
     queueChatMsg,
     writeChatMsg,
-    drawEye
+    drawEye,
+    talkThroughAll
 )

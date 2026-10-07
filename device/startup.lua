@@ -44,7 +44,7 @@ while not ws do
 end
 
 if (peripheral.find("speaker")) then
-    peripheral.find("speaker").playSound("minecraft:block.beacon.activate")
+    peripheral.find("speaker").playSound("minecraft:block.respawn_anchor.charge")
 end
 term.clear()
 --[[ term.setCursorPos(1,1)
