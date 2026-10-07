@@ -371,7 +371,7 @@ function updateWorldChatLog() {
         const msg = worldMessages[world][key]
         const p = document.createElement("p")
         if (msg.controller) {
-            p.innerText = msg.text
+            p.innerText = "/> "+ msg.text
             p.className = "fromController"
         } else {
             p.innerText = msg.text

@@ -17,7 +17,27 @@ html, body {
 }
 body {
     display: flex;
-    background-color: rgb(62, 62, 62);
+    background-color: var(--g75);
+}
+:root {
+    /* CC Colors */
+    --white: #F0F0F0;
+    --lightGray: #999999;
+    --gray: #4C4C4C;
+    --black: #111111;
+    --yellow: #DEDE6C;
+
+    /* Gray tones */
+    --g255: rgb(255, 255, 255);
+    --g225: rgb(225, 225, 225);
+    --g175: rgb(175, 175, 175);
+    --g150: rgb(150, 150, 150);
+    --g125: rgb(125, 125, 125);
+    --g100: rgb(100, 100, 100);
+    --g75: rgb(75, 75, 75);
+    --g50: rgb(50, 50, 50);
+
+    --text-shadow: rgb(62, 62, 62);
 }
 
 /* ALL AROUND */
@@ -29,22 +49,22 @@ p {
 button {
     padding: 5px 10px;
     margin-bottom: 10px;
-    background-color: rgb(100, 100, 100);
-    box-shadow: 0 4px 0 rgb(50, 50, 50);
-    color: white;
-    text-shadow: 2px 2px 0px rgb(62, 62, 62);
+    background-color: var(--g100);
+    box-shadow: 0 4px 0 var(--g50);
+    color: var(--g255);
+    text-shadow: 2px 2px 0px var(--text-shadow);
     border: none;
     cursor: pointer;
     user-select: none;
 }
 button:hover {
-    background-color: rgb(150, 150, 150);
-    box-shadow: 0 4px 0 rgb(100, 100, 100);
+    background-color: var(--g150);
+    box-shadow: 0 4px 0 var(--g100);
 }
 button:active, button:disabled{
-    background-color:rgb(75, 75, 75);
+    background-color: var(--g75);
     box-shadow: none;
-    color: lightgray;
+    color: var(--g175);
     transform: translateY(4px);
 }
 button:disabled{
@@ -53,10 +73,10 @@ button:disabled{
 select {
     padding: 5px 5px;
     height: 30px;
-    background-color: rgb(100, 100, 100);
-    box-shadow: 0 4px 0 rgb(50, 50, 50);
-    color: white;
-    text-shadow: 2px 2px 0px rgb(62, 62, 62);
+    background-color: var(--g100);
+    box-shadow: 0 4px 0 var(--g50);
+    color: var(--g255);
+    text-shadow: 2px 2px 0px var(--text-shadow);
     border: none;
     text-overflow: ellipsis;
     text-align: center;
@@ -64,8 +84,8 @@ select {
     cursor: pointer;
 }
 select:hover {
-    background-color: rgba(100, 100, 100, 0.5);
-    box-shadow: 0 4px 0 rgb(100, 100, 100);
+    background-color: var(--g150);
+    box-shadow: 0 4px 0 var(--g100);
 }
 option {
     cursor: pointer;
@@ -94,7 +114,7 @@ img {
 }
 fieldset {
     padding: 8px 15px;
-    border: 2px solid gray;
+    border: 2px solid var(--g150);
     margin-bottom: 10px;
 }
 legend {
@@ -117,10 +137,10 @@ td {
     background: transparent;
 }
 .nice-scrollbar::-webkit-scrollbar-thumb {
-    background: gray;
+    background: var(--g150);
 }
 .nice-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: dimgray;
+    background: var(--g75)
 }
 *:focus {
     outline: none;
@@ -133,9 +153,10 @@ td {
     padding: 10px;
     background-color: rgba(0, 0, 0, 0.5);
     box-shadow: 0 4px 0 rgba(0, 0, 0, 0.75);
-    color: white;
-    text-shadow: 2px 2px 0px rgb(62, 62, 62);
-    z-index: 99;
+    color: var(--g255);
+    text-shadow: 2px 2px 0px var(--text-shadow);
+    z-index: 100;
+    backdrop-filter: blur(20px);
 }
 #prompt {
     height: 124px;
@@ -146,15 +167,16 @@ td {
 }
 #main {
     flex-grow: 1;
-    background-color: gray;
+    background-color: var(--g150);
 }
 aside {
     width: 350px;
     height: 100%;
     overflow-y: auto;
+    border-right: 2px solid var(--black);
 }
 aside > details {
-    background-color: lightgray;
+    background-color: var(--g225);
     max-width: 400px;
 }
 aside::-webkit-scrollbar {
@@ -162,10 +184,10 @@ aside::-webkit-scrollbar {
 }
 summary {
     padding: 5px 8px;
-    color: white;
-    text-shadow: 2px 2px 0px rgb(62, 62, 62);
-    background-color: rgb(150, 150, 150);
-    box-shadow: 0 4px 0 rgb(100, 100, 100);
+    color: var(--g255);
+    text-shadow: 2px 2px 0px var(--text-shadow);
+    background-color: var(--g150);
+    box-shadow: 0 4px 0 var(--g100);
     list-style-type: "▶ ";
     cursor: pointer;
     user-select: none;
@@ -177,8 +199,8 @@ details[open] > summary {
     list-style-type: "▼ ";
 }
 summary:hover {
-    background-color: rgb(175, 175, 175);
-    box-shadow: 0 4px 0 rgb(125, 125, 125);
+    background-color: var(--g175);
+    box-shadow: 0 4px 0 var(--g125);
 }
 details > div {
     padding: 20px;
@@ -194,7 +216,7 @@ details > div {
 }
 #deviceSelector p {
     padding: 5px;
-    border-bottom: 2px solid gray;
+    border-bottom: 2px solid var(--g150);
     cursor: pointer;
     user-select: none;
     margin: 0;
@@ -209,7 +231,7 @@ details > div {
     background-color: rgba(255,255,255,0.75);
 }
 #deviceSelector .highlighted {
-    background-color: white;
+    background-color: var(--g255);
     padding-left: 20px;
 }
 #deviceActions {
@@ -217,84 +239,62 @@ details > div {
     justify-content: space-evenly;
     flex-wrap: wrap;
 }
-#deviceChat {
+.chat {
     padding: 10px;
     height: 300px;
-    background-color: rgb(25,25,25);
-    color: white;
+    background-color: var(--black);
+    color: var(--white);
     display: flex;
     flex-direction: column;
-}
-#deviceChatLog {
-    margin-bottom: 10px;
-    flex-grow: 1;
-    white-space: wrap;
-    overflow-y: auto;
-    display: flex flex-end;
-}
-#deviceChatLog p {
-    margin: 2px 0;
-}
-#deviceChatLog p.fromController {
-    color: rgb(219, 219, 107);
-    text-align: right;
-    margin-right: 5px;
-}
-#deviceChat input[type=text] {
-    margin-bottom: 0;
-    bottom: 0px;
-    color: white;
-    background: transparent;
-    width: 100%;
-    border: 2px solid gray;
-    appearance: none;
 }
 #worldChat {
-    padding: 10px;
-    height: 300px;
-    background-color: rgb(25,25,25);
-    color: white;
-    display: flex;
-    flex-direction: column;
+    background-color: var(--gray);
 }
-#worldChatLog {
+.chatLog {
     margin-bottom: 10px;
     flex-grow: 1;
     white-space: wrap;
     overflow-y: auto;
     display: flex flex-end;
 }
-#worldChatLog p {
+.chatLog p {
     margin: 2px 0;
 }
-#worldChatLog p.fromController {
-    color: rgb(219, 219, 107);
+.chatLog p.fromController {
+    color: var(--yellow);
     text-align: right;
-    margin-right: 5px;
 }
-#worldChat input[type=text] {
+#worldChatLog p.fromController {
+    text-align: left;
+}
+.chat input[type=text] {
     margin-bottom: 0;
     bottom: 0px;
-    color: white;
+    color: var(--white);
     background: transparent;
     width: 100%;
-    border: 2px solid gray;
+    border: 2px solid var(--lightGray);
     appearance: none;
 }
 #socketLog {
     height: 350px;
     padding: 5px;
     background-color: black;
-    color: white;
+    color: var(--g255);
     overflow-y: auto;
 }
 .dragging {
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
+    /* box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25) !important; */
+    outline: 2px solid var(--white) !important;
+}
+.dragging summary {
+    cursor: grabbing !important;
 }
 .free {
     position: absolute;
-    outline: 2px solid rgba(0, 0, 0, 0.75);
-    box-shadow: 0 5px 5px rgba(0, 0, 0, 0.25);
-    background: rgba(255, 255, 255, 0.1) !important;
-    backdrop-filter: blur(20px);
+    outline: 2px solid var(--black);
+    /* box-shadow: 0 5px 5px rgba(0, 0, 0, 0.25); */
+    background: rgba(255, 255, 255, 0.2) !important;
+    backdrop-filter: blur(5px);
+    z-index: 99;
 }
