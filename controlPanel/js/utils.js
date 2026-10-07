@@ -20,7 +20,7 @@ promptInput.addEventListener("keydown", (e) => { if (e.key === "Enter") resolveP
  * @param {String} question 
  * @param {String} placeholder
  */
-    export function ask(question, placeholder) { // Makes a popup that asks a question
+    export function ask(question, placeholder = "...") { // Makes a popup that asks a question
     resolvePrompt(null) // Resolves the last prompt as cancelled
     const title = promptBox.querySelector("p")
     promptBox.style.visibility = "visible"

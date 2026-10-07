@@ -31,7 +31,7 @@
             <summary>Device Selector</summary>
             <div>
                 <div style="display: flex;">
-                    <button id="find" style="width: 30px; padding-left: 8px;">⇄</button>
+                    <button id="find" style="width: 30px; padding-left: 8px;" title="Refresh devices">⇄</button>
                     <select id="worldSelector" style="min-width: 0; flex-grow: 1;"></select>
                 </div>
                 <div id="deviceSelector"></div>
@@ -49,22 +49,22 @@
             <summary>World Chat</summary>
             <div id="worldChat" class="chat">
                 <div id="worldChatLog" class="nice-scrollbar chatLog"></div>
-                <input type="text" id="worldChatInput">
+                <input type="text" id="worldChatInput" placeholder="...">
             </div>
         </details>
 
         <details open>
             <summary>Device Actions</summary>
             <div id="deviceActions">
-                <button id="connectBtn">Connect</button>
-                <button id="runCodeBtn">Run Code</button>
-                <button id="rebootBtn">Reboot</button>
-                <button id="infectBtn">Infect</button>
-                <button id="setIdBtn">Set ID</button>
-                <button id="setWorldBtn">Set World</button>
-                <button id="setLabelBtn">Set Label</button>
-                <button id="setDescriptionBtn">Set Description</button>
-                <button id="setAutorunBtn">Set Autorun</button>
+                <button id="connectBtn" title="Connect to the device using CloudCatcher">Connect</button>
+                <button id="runCodeBtn" title="Run LUA code on the device">Run Code</button>
+                <button id="rebootBtn" title="Reboot the device">Reboot</button>
+                <button id="infectBtn" title="Copies connection programs onto the device in the attached disk drive">Infect</button>
+                <button id="setIdBtn" title="Changes the ID of the device">Set ID</button>
+                <button id="setWorldBtn" title="Changes the World of the device">Set World</button>
+                <button id="setLabelBtn" title="Changes the Label of the device">Set Label</button>
+                <button id="setDescriptionBtn" title="Changes the Description of the device">Set Description</button>
+                <button id="setAutorunBtn" title="Changes the program that will run on startup">Set Autorun</button>
             </div>
         </details>
 
@@ -79,7 +79,7 @@
             <summary>Device Chat</summary>
             <div id="deviceChat" class="chat">
                 <div id="deviceChatLog" class="nice-scrollbar chatLog"></div>
-                <input type="text" id="deviceChatInput">
+                <input type="text" id="deviceChatInput" placeholder="...">
             </div>
         </details>
 
