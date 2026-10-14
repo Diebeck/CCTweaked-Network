@@ -47,11 +47,13 @@ local function banner()
 end
 
 local function tts(message)
+    local speaker = peripheral.find("speaker")
+    if not speaker then return end
+    
     local url = "https://music.madefor.cc/tts?text=" .. textutils.urlEncode(message)
     local response, err = http.get { url = url, binary = true }
     if not response then error(err, 0) end
 
-    local speaker = peripheral.find("speaker")
     local decoder = require("cc.audio.dfpwm").make_decoder()
 
     while true do

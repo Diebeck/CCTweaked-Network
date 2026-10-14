@@ -6,6 +6,12 @@
     <link rel="stylesheet" href="style.css">
     <link rel="icon" href="assets/img/device_icons/computer.png">
     <title>Control Panel</title>
+    <script type="importmap">
+        {"imports": {
+                "three": "https://unpkg.com/three@0.186.1/build/three.module.js"
+        }}
+    </script>
+    <script src="js/main.js" type="module"></script>
 </head>
 <body>
     <div id="prompt">
@@ -60,11 +66,13 @@
                 <button id="runCodeBtn" title="Run LUA code on the device">Run Code</button>
                 <button id="rebootBtn" title="Reboot the device">Reboot</button>
                 <button id="infectBtn" title="Copies connection programs onto the device in the attached disk drive">Infect</button>
+                <fieldset>
                 <button id="setIdBtn" title="Changes the ID of the device">Set ID</button>
                 <button id="setWorldBtn" title="Changes the World of the device">Set World</button>
                 <button id="setLabelBtn" title="Changes the Label of the device">Set Label</button>
                 <button id="setDescriptionBtn" title="Changes the Description of the device">Set Description</button>
                 <button id="setAutorunBtn" title="Changes the program that will run on startup">Set Autorun</button>
+                </fieldset>
             </div>
         </details>
 
@@ -92,7 +100,5 @@
     <div id="main">
         
     </div>
-
-    <script src="script.js" type="module"></script>
 </body>
 </html>

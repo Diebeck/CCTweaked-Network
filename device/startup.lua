@@ -1,7 +1,13 @@
 -- Main Websocket connection and utility program
 
 local socketData = {}
-socketData.address = {}
+
+local function saveSocketData()
+    local file = fs.open("socketData.txt","w")
+    file.write(textutils.serialise(socketData))
+    file.close()
+end
+
 if fs.exists("socketData.txt") then -- Retrieves socketData
     local file = fs.open("socketData.txt","r")
     socketData = textutils.unserialise(file.readAll())
@@ -11,6 +17,7 @@ else -- Asks user for info
     term.setCursorPos(1,1)
     print("No socketData.txt found!")
     print("Please enter world label (Check other computers' socketData.txt if unsure):")
+    socketData.address = {}
     socketData.address.world = read()
     print("Enter custom ID:")
     socketData.address.id = read()
@@ -20,12 +27,16 @@ else -- Asks user for info
     print("Enter device description (Optional):")
     socketData.description = read()
     if socketData.description == "" then socketData.description = nil end
-    local file = fs.open("socketData.txt","w")
-    file.write(textutils.serialise(socketData))
-    file.close()
+    saveSocketData()
 end
 local address = socketData.address
 os.setComputerLabel(socketData.label)
+
+if gps.locate() then
+    local x, y, z = gps.locate()
+    socketData.position = {x=x, y=y, z=z}
+    saveSocketData()
+end
 
 local ws, problem
 while not ws do
@@ -135,21 +146,23 @@ local function sendInfo(startup)
     
     info.advanced = term.isColor()
     info.computerID = os.getComputerID()
-    info.label = os.getComputerLabel()
-    info.description = socketData.description
     info.clock = math.floor(os.clock())
     info.autorun = socketData.autorun
+    info.description = socketData.description
+    info.label = socketData.label
+    info.position = socketData.position
+
     if #peripheral.getNames() > 0 then
         info.peripherals = {}
+        for key, value in pairs(peripheral.getNames()) do
+            info.peripherals[#info.peripherals+1] = peripheral.getType(value)
+        end
     end
     local d = peripheral.find("drive")
     if d then
-        info.drive = d.isDiskPresent()
+        if d.isDiskPresent() then info.drive = "Something" end
         if d.getDiskID() then info.drive = d.getDiskID() end
         if d.getDiskLabel() then info.drive = d.getDiskLabel() end
-    end
-    for key, value in pairs(peripheral.getNames()) do
-        info.peripherals[#info.peripherals+1] = peripheral.getType(value)
     end
 
     wsend("shoutBack", info, startup)

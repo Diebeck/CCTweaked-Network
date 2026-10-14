@@ -1,6 +1,9 @@
-import * as panels from "./js/panels.js"
-import * as utils from "./js/utils.js"
-import * as ws from "./js/utils.js"
+import * as panels from "./panels.js"
+import * as render from "./render.js"
+import * as utils from "./utils.js"
+import * as ws from "./utils.js"
+
+render.setUpdateSelectedDevice(updateSelectedDevice)
 
 let world
 let id
@@ -94,6 +97,11 @@ socket.addEventListener("message", (event) => {
 })
 
 // INTERACTION
+window.addEventListener("keydown", (e) => { // Debug
+    if (e.key == "e") {
+        addDevice({world: "simulation", id: "device"+ Math.floor(Math.random()*10000)}, {position: {x: Math.floor(Math.random()*10), y: Math.floor(Math.random()*10), z: Math.floor(Math.random()*10)}})
+    }
+})
 let lastRefreshTime = Date.now()
 document.getElementById("find").addEventListener("click", () => {
     connectedComputers = {}
@@ -108,9 +116,10 @@ worldSelector.addEventListener("change", () => {
     lastSelectedWorld = worldSelector.value
     utils.playSound("wood_click.ogg", 0.1)
     world = worldSelector.value
-    updateWorldInfo(worldSelector.value)
+    updateWorldInfo(world)
     updateWorldChatLog()
     listDevices()
+    render.updateDevices(connectedComputers[world])
 })
 document.getElementById("connectBtn").addEventListener("click", () => {
     utils.ask("CloudCatcher Code:", "...").then(function (answer) {
@@ -176,8 +185,10 @@ document.getElementById("worldChatInput").addEventListener("keydown", (e) => {
 
 // FUNCTIONS
 function updateSelectedDevice(w, i) { // Selects and shows the information of the device
+    if (!w) w = world
     world = w
     id = i
+    utils.playSound("wood_click.ogg", 0.1)
     const deviceInfo = document.getElementById("deviceInfo")
     const info = connectedComputers[w][i]
     function addInfo(t, v) {
@@ -210,8 +221,15 @@ function updateSelectedDevice(w, i) { // Selects and shows the information of th
     for (let j = 0; j < buttons.length; j++) {
         buttons[j].disabled = !i
     }
-    document.getElementById("infectBtn").disabled = !info.drive // Disables the infect button if theres nothing in the drive
+    if (info) document.getElementById("infectBtn").disabled = !info.drive // Disables the infect button if theres nothing in the drive
     updateDeviceChatLog()
+    render.focusDevice(i)
+    // Highlight linked device button
+    lastSelectedDevice = id
+    for (let i = 0; i < deviceSelector.children.length; i++) {
+        deviceSelector.children[i].className = ""
+    }
+    deviceElementLinks[id].className = "highlighted"
 }
 function addDevice(address, info) { // adds the sender to the table connectedComputers, and refreshes selectors
     if (!connectedComputers[address.world]) { // if the world doesnt exist, make it
@@ -228,34 +246,34 @@ function addDevice(address, info) { // adds the sender to the table connectedCom
     }
     worldSelector.value = lastSelectedWorld
     listDevices()
+    if (world == address.world) {
+        render.updateDevices(connectedComputers[world])
+    }
 }
+let deviceElementLinks = {}
 let lastSelectedDevice
 function listDevices() { // Lists the devices from the currently selected world from worldSelector
     deviceSelector.innerHTML = ""
     if (connectedComputers[worldSelector.value] == null) { return }
+    deviceElementLinks = {}
     for (let id in connectedComputers[worldSelector.value]) {
         const info = connectedComputers[worldSelector.value][id]
         const icon = document.createElement("img")
         icon.className = "icon"
         icon.style.marginRight = "16px"
+        // Set the device icon
         if (info) {
-            if (info.advanced) {
-                if (info.type == "computer") {
-                    icon.src = "assets/img/device_icons/computer_adv.png"
-                } else if (info.type == "turtle") {
-                    icon.src = "assets/img/device_icons/turtle_adv.png"
-                } else if (info.type == "pocket") {
-                    icon.src = "assets/img/device_icons/pocket_adv.png"
+            let src = "assets/img/device_icons/"
+            if (info.type) {
+                src += info.type
+                if (info.advanced) {
+                    src += "_adv"
                 }
             } else {
-                if (info.type == "computer") {
-                    icon.src = "assets/img/device_icons/computer.png"
-                } else if (info.type == "turtle") {
-                    icon.src = "assets/img/device_icons/turtle.png"
-                } else if (info.type == "pocket") {
-                    icon.src = "assets/img/device_icons/pocket.png"
-                }
+                src += "unknown"
             }
+            src += ".png"
+            icon.src = src
         }
 
         const p = document.createElement("p")
@@ -265,16 +283,13 @@ function listDevices() { // Lists the devices from the currently selected world 
             p.className = "highlighted"
         }
         deviceSelector.appendChild(p)
+        // Set selected device when clicked
         p.addEventListener("click", () => {
-            lastSelectedDevice = id
-            for (let i = 0; i < deviceSelector.children.length; i++) {
-                deviceSelector.children[i].className = ""
-            }
-            utils.playSound("wood_click.ogg", 0.1)
-            p.className = "highlighted"
             updateSelectedDevice(worldSelector.value, id)
         })
+        deviceElementLinks[id] = p
     }
+    console.log(deviceElementLinks)
 }
 function updateWorldInfo(world) { // Updates the world's info panel
     const worldInfo = document.getElementById("worldInfo")
@@ -290,7 +305,6 @@ function updateWorldInfo(world) { // Updates the world's info panel
         if (typeof v == "object") { // If the item is a list
             if (t == "players") { // If its players
                 for (let player of v) {
-                    console.log(player)
                     const span = document.createElement("span")
                     span.innerHTML = player
                     span.style.cursor = "pointer"
