@@ -43,6 +43,8 @@ scene.background = new THREE.Color(0.05, 0.05, 0.05)
 // Camera
 const camera = new THREE.PerspectiveCamera(90, width / height, 0.01, 100)
 camera.updateProjectionMatrix()
+camera.position.set(3, 3, 3)
+const cameraTarget = {x:0, y:0, z:0}
 
 // OrbitControls
 const controls = new OrbitControls(camera, renderer.domElement)
@@ -50,6 +52,14 @@ controls.enableDamping = false
 controls.dampingFactor = 0.1
 controls.maxDistance = 60
 controls.minDistance = 1
+
+// Checks if camera pan starts, and makes camera stop following target
+let followCameraTarget = true
+controls.addEventListener("start", (event) => {
+	if (controls.state == 2) {
+		followCameraTarget = false
+	}
+})
 
 // Lighting
 const light1 = new THREE.DirectionalLight(0xffeeee, 3)
@@ -110,10 +120,14 @@ const devicesMeshes = new THREE.Group()
 scene.add(devicesMeshes)
 export function updateDevices(d) {
 	devicesMeshes.clear()
-	let i = 0
+	let noPosIndex = 0
 	for (const device in d) {
-		const info = d[device]
-		if (!info.position) {continue}
+		let info = d[device]
+		// If device has no position, still render, but far away and in a line
+		if (!info.position) {
+			info.position = {x: noPosIndex*1.5, y: 500, z:0}
+			noPosIndex++
+		}
 
 		let color = info.advanced ? "#DEDE6C" : "#bbbbbb"
 		let dims
@@ -178,16 +192,34 @@ export function focusDevice(device) {
 	}
 
 	// Set camera
+	followCameraTarget = true
 	const pos = mesh.position
-	controls.target.x = pos.x
-	controls.target.y = pos.y
-	controls.target.z = pos.z
-	//camera.position.set(pos.x+3, pos.y+3, pos.z+3)
-	controls.update()
+	cameraTarget.x = pos.x
+	cameraTarget.y = pos.y
+	cameraTarget.z = pos.z
 }
 
 // animation
-function animate( time ) {
 
+let delay = 1
+function animate(time) {
+	const delta = time - delay
+	//console.log(delta)
+
+	if (followCameraTarget) {
+		const delay = 10
+		const xChange = (cameraTarget.x - controls.target.x) / delay / (6 / delta)
+		const yChange = (cameraTarget.y - controls.target.y) / delay / (6 / delta)
+		const zChange = (cameraTarget.z - controls.target.z) / delay / (6 / delta)
+		controls.target.x += xChange
+		controls.target.y += yChange
+		controls.target.z += zChange
+		camera.position.x += xChange
+		camera.position.y += yChange
+		camera.position.z += zChange
+	}
+
+	controls.update()
 	renderer.render(scene, camera)
+	delay = time
 }

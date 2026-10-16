@@ -289,7 +289,6 @@ function listDevices() { // Lists the devices from the currently selected world 
         })
         deviceElementLinks[id] = p
     }
-    console.log(deviceElementLinks)
 }
 function updateWorldInfo(world) { // Updates the world's info panel
     const worldInfo = document.getElementById("worldInfo")
