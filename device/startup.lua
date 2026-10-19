@@ -187,6 +187,13 @@ local function runCode()
     end
 end
 
+local function runProgram()
+    while true do
+        local event, program = os.pullEvent("runProgram")
+        shell.run(program)
+    end
+end
+
 local function changeData()
     while true do
         local event, type, newData = os.pullEvent("changeData")
@@ -281,6 +288,7 @@ parallel.waitForAny(
     shoutBack,
     runChat,
     runCode,
+    runProgram,
     changeData,
     infect,
     autorun,
