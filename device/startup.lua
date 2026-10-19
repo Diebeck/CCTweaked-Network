@@ -32,10 +32,12 @@ end
 local address = socketData.address
 os.setComputerLabel(socketData.label)
 
-if gps.locate() then
-    local x, y, z = gps.locate()
-    socketData.position = {x=x, y=y, z=z}
-    saveSocketData()
+if (not socketData.position or pocket or turtle) then
+    if gps.locate() then
+        local x, y, z = gps.locate()
+        socketData.position = {x=x, y=y, z=z}
+        saveSocketData()
+    end
 end
 
 local ws, problem
@@ -244,6 +246,23 @@ local function manageMiscEvents()
     end
 end
 
+local function relayPocketPos()
+    local lastPos = {x=0, y=0, z=0}
+    while true do
+        if pocket and gps.locate() then
+            local x, y, z = gps.locate()
+            local pos = {x=x, y=y, z=z}
+            if pos.x ~= lastPos.x or pos.y ~= lastPos.y or pos.z ~= lastPos.z then -- If position changed
+                lastPos = pos
+                socketData.position = pos
+                saveSocketData()
+                wsend("updatePosition", pos)
+            end
+            sleep(0.5)
+        end
+    end
+end
+
 local function debug()
     while true do
         local event = os.pullEvent("debug")
@@ -266,5 +285,6 @@ parallel.waitForAny(
     infect,
     autorun,
     manageMiscEvents,
+    relayPocketPos,
     debug
 )

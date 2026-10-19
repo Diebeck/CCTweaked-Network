@@ -60,12 +60,10 @@ socket.addEventListener("message", (event) => {
     if (data[1] == "shoutBack") {
         addDevice(address, data[2])
         if (data[3] == true) { // If its a startup
-            if (Date.now() - lastRefreshTime > 1000) { // Plays a sound if it wasnt instant
-                utils.playSound("charge.ogg", 0.8, 1.5)
-            }
+            utils.playSound("charge.ogg", 0.8, 1.5)
         } else { // If its an update
             if (worldSelector.value == address.world && id == address.id) { // If its the selected device, update it
-                updateSelectedDevice(worldSelector.value, id)
+                showDeviceInfo()
                 if (Date.now() - lastRefreshTime > 1000) {
                     utils.playSound("hud_bubble.ogg")
                 }
@@ -74,6 +72,17 @@ socket.addEventListener("message", (event) => {
                     utils.playSound("toggle.ogg")
                 }
             }
+        }
+    } else if (data[1] == "updatePosition") { // Device moved
+        connectedComputers[address.world][address.id].position = data[2]
+        if (connectedComputers[address.world][address.id].type == "pocket") {
+            data[2].x -= 0.5
+            data[2].z -= 0.5
+            data[2].y -= 0.62 + 0.5
+        }
+        render.updateDevicePosition(address.id, data[2])
+        if (worldSelector.value == address.world && id == address.id) {
+            showDeviceInfo()
         }
     } else if (data[1] == "worldInfo") {
         worldInfos[data[2].world] = data[2]
@@ -184,11 +193,21 @@ document.getElementById("worldChatInput").addEventListener("keydown", (e) => {
 })
 
 // FUNCTIONS
-function updateSelectedDevice(w, i) { // Selects and shows the information of the device
-    if (!w) w = world
+function updateSelectedDevice(w = world, i = id) { // Selects a device
     world = w
     id = i
     utils.playSound("wood_click.ogg", 0.1)
+    render.focusDevice(i)
+    // Highlight linked device button
+    lastSelectedDevice = id
+    render.setLastSelectedDevice(id)
+    for (let i = 0; i < deviceSelector.children.length; i++) {
+        deviceSelector.children[i].className = ""
+    }
+    deviceElementLinks[id].className = "highlighted"
+    showDeviceInfo(w, i)
+}
+function showDeviceInfo(w = world, i = id) { // Shows the information of a device
     const deviceInfo = document.getElementById("deviceInfo")
     const info = connectedComputers[w][i]
     function addInfo(t, v) {
@@ -223,13 +242,6 @@ function updateSelectedDevice(w, i) { // Selects and shows the information of th
     }
     if (info) document.getElementById("infectBtn").disabled = !info.drive // Disables the infect button if theres nothing in the drive
     updateDeviceChatLog()
-    render.focusDevice(i)
-    // Highlight linked device button
-    lastSelectedDevice = id
-    for (let i = 0; i < deviceSelector.children.length; i++) {
-        deviceSelector.children[i].className = ""
-    }
-    deviceElementLinks[id].className = "highlighted"
 }
 function addDevice(address, info) { // adds the sender to the table connectedComputers, and refreshes selectors
     if (!connectedComputers[address.world]) { // if the world doesnt exist, make it
@@ -304,11 +316,11 @@ function updateWorldInfo(world) { // Updates the world's info panel
         if (typeof v == "object") { // If the item is a list
             if (t == "players") { // If its players
                 for (let player of v) {
-                    const span = document.createElement("span")
-                    span.innerHTML = player
-                    span.style.cursor = "pointer"
-                    value.appendChild(span)
-                    span.addEventListener("click", () => {
+                    const p = document.createElement("p")
+                    p.innerHTML = player
+                    p.style.cursor = "pointer"
+                    value.appendChild(p)
+                    p.addEventListener("click", () => {
                         utils.ask(`Toast to ${player}:`).then(function (answer) {
                             if (answer) {
                                 wbroadcast("sendToast", player, answer)

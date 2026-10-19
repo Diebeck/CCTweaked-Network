@@ -44,7 +44,7 @@ scene.background = new THREE.Color(0.05, 0.05, 0.05)
 const camera = new THREE.PerspectiveCamera(90, width / height, 0.01, 100)
 camera.updateProjectionMatrix()
 camera.position.set(3, 3, 3)
-const cameraTarget = {x:0, y:0, z:0}
+let cameraTarget = {x:0, y:0, z:0}
 
 // OrbitControls
 const controls = new OrbitControls(camera, renderer.domElement)
@@ -106,7 +106,7 @@ renderer.domElement.addEventListener("mouseup", (event) => {
 			const clicked = raycastObject(event.offsetX, event.offsetY)
 			if (clicked) {
 				const device = Object.keys(deviceMeshLinks).find(key => deviceMeshLinks[key] === clicked)
-				updateSelectedDevice(null, device)
+				updateSelectedDevice(undefined, device)
 			}
 		} else if (event.button == 2) { // Right click
 			console.log("Right click")
@@ -115,13 +115,25 @@ renderer.domElement.addEventListener("mouseup", (event) => {
 })
 
 // Devices
+let lastSelectedDevice
+export function setLastSelectedDevice(id) {
+	lastSelectedDevice = id
+}
 let deviceMeshLinks = {}
 const devicesMeshes = new THREE.Group()
 scene.add(devicesMeshes)
 export function updateDevices(d) {
-	devicesMeshes.clear()
+	// If any current device isnt found in the new device list, remove it
+	for (const device in deviceMeshLinks) {
+		if (!(device in d)) {
+			devicesMeshes.remove(deviceMeshLinks[device])
+			delete deviceMeshLinks[device]
+		}
+	}
 	let noPosIndex = 0
 	for (const device in d) {
+		// If the device already exists, continue
+		if (device in deviceMeshLinks) {continue}
 		let info = d[device]
 		// If device has no position, still render, but far away and in a line
 		if (!info.position) {
@@ -173,12 +185,17 @@ export function updateDevices(d) {
 			box.position.set(pos.x, pos.y, pos.z)
 		}
 		devicesMeshes.add(box)
+
+		// If this device and mesh is the same as the last selected device, focus it
+		if (device == lastSelectedDevice) {
+			focusDevice(lastSelectedDevice, followCameraTarget)
+		}
 	}
 }
 
-export function focusDevice(device) {
-	if (!deviceMeshLinks[device]) {return}
-	const mesh = deviceMeshLinks[device]
+export function focusDevice(id, setCamera = true) {
+	if (!deviceMeshLinks[id]) {return}
+	const mesh = deviceMeshLinks[id]
 
 	// Get rid of all emissives
 	for (const link in deviceMeshLinks) {
@@ -192,21 +209,31 @@ export function focusDevice(device) {
 	}
 
 	// Set camera
-	followCameraTarget = true
-	const pos = mesh.position
-	cameraTarget.x = pos.x
-	cameraTarget.y = pos.y
-	cameraTarget.z = pos.z
+	if (setCamera) {
+		followCameraTarget = true
+		const pos = mesh.position
+		/* cameraTarget.x = pos.x
+		cameraTarget.y = pos.y
+		cameraTarget.z = pos.z */
+		cameraTarget = mesh.position
+	}
 }
 
-// animation
+const lerpBuffer = []
+export function updateDevicePosition(id, pos) {
+	if (!deviceMeshLinks[id]) {return}
+	const mesh = deviceMeshLinks[id]
+	lerpBuffer[id] = {mesh:mesh, pos:{x: pos.x, y: pos.y, z: pos.z}}
+	//mesh.position.set(pos.x, pos.y, pos.z)
+}
 
+// Main render loop
 let delay = 1
 function animate(time) {
 	const delta = time - delay
 	//console.log(delta)
 
-	if (followCameraTarget) {
+	if (followCameraTarget) { // Camera lerp
 		const delay = 10
 		const xChange = (cameraTarget.x - controls.target.x) / delay / (6 / delta)
 		const yChange = (cameraTarget.y - controls.target.y) / delay / (6 / delta)
@@ -217,6 +244,19 @@ function animate(time) {
 		camera.position.x += xChange
 		camera.position.y += yChange
 		camera.position.z += zChange
+	}
+
+	for (const id in lerpBuffer) { // Device movement lerp
+		const mesh = lerpBuffer[id].mesh
+		const pos = lerpBuffer[id].pos
+		const delay = 50
+		mesh.position.x += (pos.x - mesh.position.x) / delay / (6 / delta)
+		mesh.position.y += (pos.y - mesh.position.y) / delay / (6 / delta)
+		mesh.position.z += (pos.z - mesh.position.z) / delay / (6 / delta)
+		if (mesh.position.distanceTo(new THREE.Vector3(pos.x, pos.y, pos.z)) < 0.01) {
+			mesh.position.set(pos.x, pos.y, pos.z)
+			delete lerpBuffer[id]
+		}
 	}
 
 	controls.update()
