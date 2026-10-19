@@ -265,8 +265,8 @@ local function relayPocketPos()
                 saveSocketData()
                 wsend("updatePosition", pos)
             end
-            sleep(0.5)
         end
+        sleep(0.5)
     end
 end
 
