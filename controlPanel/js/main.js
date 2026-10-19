@@ -263,7 +263,7 @@ function listDevices() { // Lists the devices from the currently selected world 
         icon.style.marginRight = "16px"
         // Set the device icon
         if (info) {
-            let src = "assets/img/device_icons/"
+            let src = "assets/img/icons/device/"
             if (info.type) {
                 src += info.type
                 if (info.advanced) {
