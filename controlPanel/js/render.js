@@ -18,8 +18,9 @@ main.appendChild(renderer.domElement)
 
 // Texture rendering function
 const loader = new THREE.TextureLoader()
-loader.setPath("/controlPanel/assets/img/textures/")
+//loader.setPath("../assets/img/textures/")
 function loadTexture(path) {
+	path = "assets/img/textures/"+ path
 	const texture = loader.load(path)
 	texture.magFilter = THREE.NearestFilter
 	texture.colorSpace = THREE.SRGBColorSpace
