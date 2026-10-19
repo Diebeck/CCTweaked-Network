@@ -39,10 +39,10 @@ X computer server on world that sends some infos of world:
     X world days "os.day()"
     X chatbox for chat
     X player detector
+X make installer
 - multiple tabs for programs (main program being chat)
     X main 
     X cloudcatcher
     - any others ()
 - if its non-advanced (cant have multiple tabs) make exception to show chat or 
 - make whole thing a background process
-- make installer
