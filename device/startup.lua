@@ -139,7 +139,7 @@ local function forceReboot()
     os.reboot()
 end
 
-local function sendInfo(startup)
+local function sendInfo(connection)
     local info = {}
 
     info.type = "computer"
@@ -167,13 +167,13 @@ local function sendInfo(startup)
         if d.getDiskLabel() then info.drive = d.getDiskLabel() end
     end
 
-    wsend("shoutBack", info, startup)
+    wsend("shoutBack", info, connection)
 end
 
 local function shoutBack()
     while true do
         local event = os.pullEvent("find")
-        sendInfo()
+        sendInfo(true)
     end
 end
 

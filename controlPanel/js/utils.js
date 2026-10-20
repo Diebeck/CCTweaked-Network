@@ -39,14 +39,18 @@ promptInput.addEventListener("keydown", (e) => { if (e.key === "Enter") resolveP
     })
 }
 
+const alertBox = document.getElementById("alert")
+const p = alertBox.querySelector("p")
+const button = alertBox.querySelector("button")
+button.addEventListener("click", function(){
+    button.removeEventListener("click", close)
+    alertBox.style.visibility = "hidden"
+})
 /**
  * Shows a stylized alert box
  * @param {String} text 
  */
 export function alert(text) {
-    const alertBox = document.getElementById("alert")
-    const p = alertBox.querySelector("p")
-    const button = alertBox.querySelector("button")
     if (Math.floor(Math.random() * 100) == 0) { // funny
         button.innerText = "I thoroughly understand this statement and I am wholeheartedly aware of its meaning"
     } else {
@@ -58,11 +62,33 @@ export function alert(text) {
     alertBox.style.left = window.innerWidth / 2 - dims.width / 2 + "px"
     alertBox.style.visibility = "visible"
     playSound("hud_bubble.ogg", 1)
-    function close() {
-        button.removeEventListener("click", close)
-        alertBox.style.visibility = "hidden"
+    log("Alert: "+ text, "alert")
+}
+
+/**
+ * Sends a message in the human-language log
+ * @param {string} msg what is sent in the llog
+ * @param {string} type determines the msg color (default/system/error/warning/alert/minor)
+ */
+export function log(msg, type = "default") { // Sends a message in the log
+    const log = document.getElementById("log")
+    const p = document.createElement("p")
+    p.innerText = msg
+    p.title = new Date().toLocaleTimeString()
+    const types = {
+        default: "var(--white)",
+        system: "var(--lightBlue)",
+        error: "var(--red)",
+        warning: "var(--orange)",
+        alert: "var(--yellow)",
+        minor: "var(--gray)"
     }
-    button.addEventListener("click", close)
+    p.style.color = types[type]
+    log.appendChild(p)
+    if (log.children.length > 1000) {
+        log.removeChild(log.children[0])
+    }
+    log.scrollTop = log.scrollHeight
 }
 
 /**

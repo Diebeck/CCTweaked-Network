@@ -26,6 +26,9 @@ body {
     --gray: #4C4C4C;
     --black: #111111;
     --yellow: #DEDE6C;
+    --orange: #F2B233;
+    --red: #CC4C4C;
+    --lightBlue: #99B2F2;
 
     /* Gray tones */
     --g255: rgb(255, 255, 255);
@@ -204,7 +207,7 @@ summary:hover {
 }
 details > div {
     padding: 20px;
-    word-break: break-all;
+    word-break: break-word;
 }
 #find {
     width: 100%;
@@ -276,12 +279,19 @@ details > div {
     border: 2px solid var(--lightGray);
     appearance: none;
 }
-#socketLog {
+#log {
     height: 350px;
-    padding: 5px;
-    background-color: black;
+    padding: 10px;
+    background-color: var(--black);
     color: var(--g255);
     overflow-y: auto;
+}
+#log p {
+    line-height: 18px;
+    cursor: default;
+}
+#log p::before {
+    content: "> ";
 }
 .dragging {
     /* box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25) !important; */
@@ -299,6 +309,6 @@ details > div {
     backdrop-filter: blur(5px);
     z-index: 99;
     .chat {
-        background-color: rgba(0,0,0, 0.5) !important;
+        background-color: rgba(0,0,0, 0.7) !important;
     }
 }

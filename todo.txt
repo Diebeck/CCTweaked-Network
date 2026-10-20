@@ -15,10 +15,10 @@ X different sounds when devices update
 X disable buttons when no device selected
 X pop out and drag sections (very cool)
 X implement 3D engine
+X Add human-language log for minor alerts (computer connected, chats, changes)
 - 3D engine fundamentals
 - socket reconnection
 - icon and sound when new message
-- Add human-language log for minor alerts (computer connected, chats, changes)
 - Target whole worlds or entire network
 - remember selected world/computer across page reloads
 - reorder sections
