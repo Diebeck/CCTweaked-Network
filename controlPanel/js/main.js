@@ -1,7 +1,7 @@
 import * as panels from "./panels.js"
 import * as render from "./render.js"
 import * as utils from "./utils.js"
-import * as ws from "./utils.js"
+import * as ws from "./websocket.js"
 
 render.setUpdateSelectedDevice(updateSelectedDevice)
 
@@ -12,9 +12,10 @@ const worldInfos = {}
 const deviceMessages = {}
 const worldMessages = {}
 
+// Disable deviceAction buttons when just started
 const buttons = document.getElementById("deviceActions").querySelectorAll("button")
 for (let i = 0; i < buttons.length; i++) {
-    buttons[i].disabled = true
+    //buttons[i].disabled = true
 }
 
 // WEBSOCKET
@@ -36,32 +37,39 @@ function wWideBroadcast(...data) { // Wide broadcast
 // Connection open/close/error log
 socket.addEventListener("open", () => {
     console.log("Connected to WebSocket server.")
+    utils.log("Connected to Websocket server", "system")
     wWideBroadcast("find")
 })
 socket.addEventListener("close", () => {
     console.log("Disconnected from WebSocket server.")
+    utils.log("Disconnected from Websocket server", "error")
 })
 socket.addEventListener("error", error => {
-    console.log("WebSocket error: " + error)
+    console.log(error)
+    utils.log("WebSocket error", "warning")
 })
 
 socket.addEventListener("message", (event) => {
-    socketLogMsg("Got: " + event.data)
+    //console.log("Got: " + event.data)
     const data = JSON.parse(event.data)
     const address = data[0]
     if (data[1].substring(0, 4) != "Pong") {
-        console.log("Got:", data)
+        //console.log("Got:", data)
     }
     if (data[1] == "Ping") {
-        wsend("Pong Website")
+        //wsend("Pong Website")
     }
 
     // Run no matter the address
     if (data[1] == "shoutBack") {
         addDevice(address, data[2])
         if (data[3] == true) { // If its a startup
-            utils.playSound("charge.ogg", 0.8, 1.5)
+            if (Date.now() - lastRefreshTime > 1000) {
+                utils.playSound("charge.ogg", 0.8, 1.5)
+            }
+            utils.log(`'${address.id}' connected`, "minor")
         } else { // If its an update
+            utils.log(`Activity detected at '${address.id}'`)
             if (worldSelector.value == address.world && id == address.id) { // If its the selected device, update it
                 showDeviceInfo()
                 if (Date.now() - lastRefreshTime > 1000) {
@@ -107,8 +115,11 @@ socket.addEventListener("message", (event) => {
 
 // INTERACTION
 window.addEventListener("keydown", (e) => { // Debug
+    return
     if (e.key == "e") {
-        addDevice({world: "simulation", id: "device"+ Math.floor(Math.random()*10000)}, {position: {x: Math.floor(Math.random()*10), y: Math.floor(Math.random()*10), z: Math.floor(Math.random()*10)}})
+        addDevice({world: "simulation", id: "device"+ Math.floor(Math.random()*10000)}, {position: {x: Math.floor(Math.random()*10), y: Math.floor(Math.random()*10), z: Math.floor(Math.random()*10)}, type: "turtle"})
+    } else if (e.key == "r") {
+        utils.log("Lorem ipsum dolor sit amet consectetur adipisicing elit. Dignissimos eius temporibus officiis earum animi quas incidunt eveniet rerum eligendi, accusantium modi ipsum facilis ipsam quia nam repudiandae vitae possimus est.")
     }
 })
 let lastRefreshTime = Date.now()
@@ -117,6 +128,7 @@ document.getElementById("find").addEventListener("click", () => {
     lastRefreshTime = Date.now()
     utils.playSound("spyglass_stop.ogg", 1, 1)
     wWideBroadcast("find")
+    utils.log("Refreshed devices...")
 })
 const worldSelector = document.getElementById("worldSelector")
 const deviceSelector = document.getElementById("deviceSelector")
@@ -134,16 +146,19 @@ document.getElementById("connectBtn").addEventListener("click", () => {
     utils.ask("CloudCatcher Code:", "...").then(function (answer) {
         if (answer) {
             wsend("cloud", answer)
+            utils.log("Connected to "+ id)
         }
     })
 })
 document.getElementById("rebootBtn").addEventListener("click", () => {
     wsend("reboot")
+    utils.log("Rebooted "+ id)
 })
 document.getElementById("runCodeBtn").addEventListener("click", () => {
     utils.ask("Lua Code:", "...").then(function (answer) {
         if (answer) {
             wsend("runCode", answer)
+            utils.log(`Ran '${answer}' on ${id}`)
         }
     })
 })
@@ -151,6 +166,7 @@ document.getElementById("runProgramBtn").addEventListener("click", () => {
     utils.ask("Program:", "...").then(function (answer) {
         if (answer) {
             wsend("runProgram", answer)
+            utils.log(`Ran '${answer}' on ${id}`)
         }
     })
 })
@@ -158,6 +174,7 @@ document.getElementById("infectBtn").addEventListener("click", () => {
     utils.ask("Infected Address ID:", "...").then(function (answer) {
         if (answer) {
             wsend("infect", answer)
+            utils.log(`Infected ${id}'s drive`)
         }
     })
 })
@@ -173,6 +190,7 @@ for (const key in setDataButtons) {
         utils.ask("New " + setDataButtons[key] + ":", "...").then(function (answer) {
             if (answer) {
                 wsend("changeData", setDataButtons[key], answer)
+                utils.log(`Changed ${id}'s ${setDataButtons[key]}`)
             }
         })
     })
@@ -250,7 +268,12 @@ function showDeviceInfo(w = world, i = id) { // Shows the information of a devic
     if (info) document.getElementById("infectBtn").disabled = !info.drive // Disables the infect button if theres nothing in the drive
     updateDeviceChatLog()
 }
-function addDevice(address, info) { // adds the sender to the table connectedComputers, and refreshes selectors
+/**
+ * adds the sender to the table connectedComputers, and refreshes selectors
+ * @param {Array.<{world: string, id: string}>} address the device's address array
+ * @param {Array} info any info the device may have
+ */
+function addDevice(address, info) {
     if (!connectedComputers[address.world]) { // if the world doesnt exist, make it
         connectedComputers[address.world] = []
     }
@@ -349,15 +372,6 @@ function updateWorldInfo(world) { // Updates the world's info panel
     const info = worldInfos[world]
     for (let key in info) {
         addInfo(key, info[key])
-    }
-}
-function socketLogMsg(msg) { // Sends a message in the socket debug
-    const log = document.getElementById("socketLog")
-    const p = document.createElement("p")
-    p.innerText = msg
-    log.appendChild(p)
-    if (log.children.length > 100) {
-        log.removeChild(log.children[0])
     }
 }
 function recordDeviceChatMessage(address, msg, controller) {

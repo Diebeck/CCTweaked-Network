@@ -32,11 +32,20 @@ window.addEventListener("keyup", (e) => {
 })
 
 // Makes panels draggable
+const panelPositions = JSON.parse(localStorage.getItem("panelPositions"))
 let activePanel = null
 let lastActivePanel = null
 let offsetX = 0, offsetY = 0
 document.querySelectorAll("aside > details").forEach(panel => {
-    panel.querySelector("summary").addEventListener("mousedown", (e) => {
+    const summary = panel.querySelector("summary")
+    if (summary.innerHTML in panelPositions) {
+        const pos = panelPositions[summary.innerHTML]
+        panel.style.left = pos.x
+        panel.style.top = pos.y
+        panel.classList.add("dragging")
+        panel.classList.add("free")
+    }
+    summary.addEventListener("mousedown", (e) => {
         if (!shiftDown) {return}
         activePanel = panel
         lastActivePanel = panel
@@ -64,15 +73,21 @@ document.addEventListener("mousemove", (e) => {
     y = Math.min(window.screen.height - 200, y)
     activePanel.style.left = x + "px"
     activePanel.style.top = y + "px"
-    /* panelPositions[activePanel.id] = {}
-    panelPositions[activePanel.id].y = activePanel.style.top
-    panelPositions[activePanel.id].x = activePanel.style.left
-    localStorage.setItem("panelPositions", JSON.stringify(panelPositions)) */
 })
 document.addEventListener("mouseup", (e) => {
     if (activePanel) {
         activePanel.classList.remove("dragging")
-        if (e.clientX < 350) {activePanel.classList.remove("free")}
+        const id = activePanel.querySelector("summary").innerHTML
+        if (e.clientX < 350) {
+            activePanel.classList.remove("free")
+            delete panelPositions[id]
+        } else {
+            panelPositions[id] = {}
+            panelPositions[id].y = activePanel.style.top
+            panelPositions[id].x = activePanel.style.left
+        }
+        localStorage.setItem("panelPositions", JSON.stringify(panelPositions))
     }
+    
     activePanel = null
 })
